@@ -92,9 +92,21 @@
       background: radial-gradient(ellipse at 50% 0%, rgba(194,68,212,0.12) 0%, transparent 70%);
     }
 
+    /* ─────────────────── Arena columns ─────────────────── */
+    .arena-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+    .arena-col:first-child { margin-right: 7px; }
+    .arena-col:last-child  { margin-left: 7px; }
+
     /* ─────────────────── Profile cards ─────────────────── */
     .side {
       flex: 1;
+      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -110,12 +122,10 @@
     #left-side  {
       background: var(--grad-l);
       border: 1.5px solid rgba(255,77,125,0.3);
-      margin-right: 7px;
     }
     #right-side {
       background: var(--grad-r);
       border: 1.5px solid rgba(194,68,212,0.3);
-      margin-left: 7px;
     }
 
     .side:hover {
@@ -273,13 +283,12 @@
       50%       { box-shadow: 0 0 32px rgba(255,77,125,0.8), 0 0 70px rgba(255,77,125,0.3); }
     }
 
-    /* ─────────────────── Like buttons (inside cards) ─────────────────── */
+    /* ─────────────────── Like buttons (below cards) ─────────────────── */
     .card-actions {
       width: 100%;
       display: flex;
       justify-content: center;
       padding: 12px 0 16px;
-      pointer-events: all;
     }
 
     .like-btn {
@@ -412,31 +421,35 @@
   <!-- Arena -->
   <div id="arena">
 
-    <!-- Left Side -->
-    <div class="side" id="left-side" role="button" aria-label="Play left fart" tabindex="0">
-      <div class="side-glow"></div>
-      <span class="win-badge" id="left-badge">🔥 0 WINS</span>
-      <div class="profile-ring">
-        <div class="fart-blob" id="left-blob">💨</div>
+    <!-- Left Column -->
+    <div class="arena-col">
+      <div class="side" id="left-side" role="button" aria-label="Play left fart" tabindex="0">
+        <div class="side-glow"></div>
+        <span class="win-badge" id="left-badge">🔥 0 WINS</span>
+        <div class="profile-ring">
+          <div class="fart-blob" id="left-blob">💨</div>
+        </div>
+        <div class="fart-name" id="left-name">Loading…</div>
+        <div class="fart-subtitle">Tap to sniff 👃</div>
+        <div class="play-status" id="left-status"></div>
       </div>
-      <div class="fart-name" id="left-name">Loading…</div>
-      <div class="fart-subtitle">Tap to sniff 👃</div>
-      <div class="play-status" id="left-status"></div>
       <div class="card-actions">
         <button class="like-btn" id="like-left" aria-label="Like left fart">❤️</button>
       </div>
     </div>
 
-    <!-- Right Side -->
-    <div class="side" id="right-side" role="button" aria-label="Play right fart" tabindex="0">
-      <div class="side-glow"></div>
-      <span class="win-badge" id="right-badge">🔥 0 WINS</span>
-      <div class="profile-ring">
-        <div class="fart-blob" id="right-blob">💨</div>
+    <!-- Right Column -->
+    <div class="arena-col">
+      <div class="side" id="right-side" role="button" aria-label="Play right fart" tabindex="0">
+        <div class="side-glow"></div>
+        <span class="win-badge" id="right-badge">🔥 0 WINS</span>
+        <div class="profile-ring">
+          <div class="fart-blob" id="right-blob">💨</div>
+        </div>
+        <div class="fart-name" id="right-name">Loading…</div>
+        <div class="fart-subtitle">Tap to sniff 👃</div>
+        <div class="play-status" id="right-status"></div>
       </div>
-      <div class="fart-name" id="right-name">Loading…</div>
-      <div class="fart-subtitle">Tap to sniff 👃</div>
-      <div class="play-status" id="right-status"></div>
       <div class="card-actions">
         <button class="like-btn" id="like-right" aria-label="Like right fart">❤️</button>
       </div>
