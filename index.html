@@ -3,26 +3,32 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Stinkr 💨 Fart Battle</title>
+  <title>Stinkr 💕 Find Your Perfect Stench</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
   <style>
     /* ─────────────────── Reset & Base ─────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --green:   #39ff14;
-      --green2:  #7fff00;
-      --brown:   #c8860a;
-      --yellow:  #ffe600;
-      --dark:    #0d0d0d;
-      --darker:  #080808;
-      --left-bg: #0a1a06;
-      --right-bg:#1a1100;
+      --pink:    #ff4d7d;
+      --pink2:   #ff80aa;
+      --rose:    #ff2d6e;
+      --purple:  #c244d4;
+      --lavender:#e8a0f5;
+      --dark:    #1a0d1e;
+      --darker:  #120910;
+      --card-l:  #2a0d2e;
+      --card-r:  #2e0d1a;
+      --grad-l:  linear-gradient(160deg, #2a0d2e 0%, #1a0818 100%);
+      --grad-r:  linear-gradient(160deg, #2e0d1a 0%, #180811 100%);
     }
 
     html, body {
       height: 100%;
       overflow: hidden;
-      font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+      font-family: 'Inter', 'Arial', sans-serif;
       background: var(--dark);
       color: #fff;
       user-select: none;
@@ -46,44 +52,47 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 18px;
+      gap: 14px;
       padding: 10px 20px;
-      background: rgba(0,0,0,0.82);
-      border-bottom: 2px solid var(--green);
-      backdrop-filter: blur(6px);
+      background: rgba(18,9,16,0.88);
+      border-bottom: 1px solid rgba(255,77,125,0.35);
+      backdrop-filter: blur(12px);
     }
 
     #header h1 {
-      font-size: clamp(1.2rem, 4vw, 1.9rem);
-      letter-spacing: 0.12em;
-      background: linear-gradient(90deg, var(--green), var(--yellow), var(--brown));
+      font-size: clamp(1.1rem, 4vw, 1.75rem);
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      background: linear-gradient(90deg, var(--pink), var(--lavender), var(--pink2));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-      filter: drop-shadow(0 0 8px rgba(57,255,20,0.6));
+      filter: drop-shadow(0 0 10px rgba(255,77,125,0.55));
       flex-shrink: 0;
     }
 
     #champion-bar {
-      font-size: clamp(0.65rem, 2.2vw, 0.88rem);
-      color: var(--yellow);
+      font-size: clamp(0.62rem, 2vw, 0.84rem);
+      color: var(--lavender);
       text-align: center;
       min-height: 1.2em;
-      font-family: Arial, sans-serif;
-      font-weight: normal;
-      filter: drop-shadow(0 0 6px rgba(255,230,0,0.5));
+      font-weight: 600;
+      filter: drop-shadow(0 0 6px rgba(232,160,245,0.4));
     }
 
     /* ─────────────────── Arena ─────────────────── */
     #arena {
       position: fixed;
       inset: 0;
-      top: 56px;  /* below header */
-      bottom: 70px; /* above footer vote area */
+      top: 58px;
+      bottom: 78px;
       display: flex;
+      gap: 0;
+      padding: 16px 14px 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(194,68,212,0.12) 0%, transparent 70%);
     }
 
-    /* ─────────────────── Side panels ─────────────────── */
+    /* ─────────────────── Profile cards ─────────────────── */
     .side {
       flex: 1;
       display: flex;
@@ -93,38 +102,75 @@
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      transition: background 0.2s;
+      border-radius: 24px;
+      transition: transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
     }
 
-    #left-side  { background: var(--left-bg);  border-right: 2px solid rgba(57,255,20,0.25); }
-    #right-side { background: var(--right-bg); border-left:  2px solid rgba(200,134,10,0.25); }
+    #left-side  {
+      background: var(--grad-l);
+      border: 1.5px solid rgba(255,77,125,0.3);
+      margin-right: 7px;
+    }
+    #right-side {
+      background: var(--grad-r);
+      border: 1.5px solid rgba(194,68,212,0.3);
+      margin-left: 7px;
+    }
 
-    .side:hover { filter: brightness(1.12); }
+    .side:hover {
+      transform: translateY(-4px) scale(1.015);
+      box-shadow: 0 16px 48px rgba(255,77,125,0.25);
+    }
+    #right-side:hover {
+      box-shadow: 0 16px 48px rgba(194,68,212,0.25);
+    }
 
     .side-glow {
       position: absolute;
       inset: 0;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s;
-      border-radius: 0;
+      transition: opacity 0.3s;
+      border-radius: 24px;
     }
-    #left-side  .side-glow { background: radial-gradient(ellipse at center, rgba(57,255,20,0.18) 0%, transparent 70%); }
-    #right-side .side-glow { background: radial-gradient(ellipse at center, rgba(200,134,10,0.22) 0%, transparent 70%); }
+    #left-side  .side-glow { background: radial-gradient(ellipse at center, rgba(255,77,125,0.2) 0%, transparent 70%); }
+    #right-side .side-glow { background: radial-gradient(ellipse at center, rgba(194,68,212,0.22) 0%, transparent 70%); }
     .side:hover .side-glow  { opacity: 1; }
     .side.playing .side-glow { opacity: 1 !important; }
 
-    /* Fart cloud blob */
-    .fart-blob {
-      font-size: clamp(5rem, 14vw, 10rem);
-      line-height: 1;
-      margin-bottom: 12px;
-      filter: drop-shadow(0 0 24px rgba(57,255,20,0.5));
-      transition: transform 0.1s;
+    /* Profile photo circle */
+    .profile-ring {
+      width: clamp(90px, 20vw, 150px);
+      height: clamp(90px, 20vw, 150px);
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      border: 3px solid rgba(255,77,125,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      box-shadow: 0 0 24px rgba(255,77,125,0.3), inset 0 0 20px rgba(255,77,125,0.06);
+      transition: box-shadow 0.2s;
       pointer-events: none;
     }
-    #right-side .fart-blob {
-      filter: drop-shadow(0 0 24px rgba(255,200,0,0.55));
+    #right-side .profile-ring {
+      border-color: rgba(194,68,212,0.5);
+      box-shadow: 0 0 24px rgba(194,68,212,0.3), inset 0 0 20px rgba(194,68,212,0.06);
+    }
+    .side.playing .profile-ring {
+      box-shadow: 0 0 40px rgba(255,77,125,0.7), inset 0 0 20px rgba(255,77,125,0.1);
+      animation: ringglow 0.45s ease-in-out;
+    }
+    #right-side.playing .profile-ring {
+      box-shadow: 0 0 40px rgba(194,68,212,0.7), inset 0 0 20px rgba(194,68,212,0.1);
+    }
+
+    /* Fart cloud blob */
+    .fart-blob {
+      font-size: clamp(3.5rem, 10vw, 7rem);
+      line-height: 1;
+      pointer-events: none;
     }
     .side.playing .fart-blob {
       animation: fartjiggle 0.45s ease-in-out;
@@ -139,70 +185,66 @@
       100% { transform: scale(1)    rotate(0deg); }
     }
 
+    @keyframes ringglow {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.1); }
+      60%  { transform: scale(0.97); }
+      100% { transform: scale(1); }
+    }
+
     .fart-name {
-      font-size: clamp(1.1rem, 3.5vw, 2rem);
-      letter-spacing: 0.07em;
+      font-size: clamp(1rem, 3vw, 1.6rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
       text-align: center;
       padding: 0 12px;
       pointer-events: none;
-      text-shadow: 0 0 12px currentColor;
     }
-    #left-side  .fart-name { color: var(--green); }
-    #right-side .fart-name { color: var(--yellow); }
+    #left-side  .fart-name { color: var(--pink2); text-shadow: 0 0 14px rgba(255,128,170,0.6); }
+    #right-side .fart-name { color: var(--lavender); text-shadow: 0 0 14px rgba(232,160,245,0.6); }
 
     .fart-subtitle {
-      font-size: clamp(0.7rem, 1.8vw, 0.92rem);
-      font-family: Arial, sans-serif;
-      font-weight: normal;
-      color: rgba(255,255,255,0.5);
+      font-size: clamp(0.68rem, 1.6vw, 0.85rem);
+      font-weight: 400;
+      color: rgba(255,255,255,0.45);
       margin-top: 6px;
       pointer-events: none;
     }
 
-    .play-hint {
-      font-size: clamp(0.65rem, 1.6vw, 0.82rem);
-      font-family: Arial, sans-serif;
-      font-weight: normal;
-      margin-top: 18px;
-      opacity: 0.55;
-      letter-spacing: 0.08em;
-      pointer-events: none;
-    }
-
     .play-status {
-      font-size: clamp(0.75rem, 1.8vw, 0.95rem);
-      font-family: Arial, sans-serif;
-      font-weight: bold;
+      font-size: clamp(0.7rem, 1.7vw, 0.9rem);
+      font-weight: 600;
       margin-top: 10px;
       min-height: 1.3em;
-      color: var(--green2);
       pointer-events: none;
       transition: opacity 0.3s;
     }
-    #right-side .play-status { color: var(--yellow); }
+    #left-side  .play-status { color: var(--pink); }
+    #right-side .play-status { color: var(--lavender); }
 
-    /* Win badge */
+    /* Streak badge */
     .win-badge {
       display: none;
       position: absolute;
-      top: 16px;
-      background: var(--green);
-      color: #000;
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
+      top: 14px;
+      background: linear-gradient(135deg, var(--rose), var(--purple));
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
       padding: 4px 12px;
       border-radius: 99px;
-      font-family: Arial, sans-serif;
+      box-shadow: 0 2px 12px rgba(255,45,110,0.4);
     }
-    #left-side  .win-badge { left: 16px;  background: var(--green); }
-    #right-side .win-badge { right: 16px; background: var(--brown); color: #fff; }
+    #left-side  .win-badge { left: 14px; }
+    #right-side .win-badge { right: 14px; }
 
     /* ─────────────────── VS divider ─────────────────── */
     #vs-divider {
       position: fixed;
       left: 50%;
-      top: 56px;
-      bottom: 70px;
+      top: 58px;
+      bottom: 78px;
       transform: translateX(-50%);
       z-index: 10;
       display: flex;
@@ -211,25 +253,24 @@
     }
 
     #vs-circle {
-      width: clamp(48px, 8vw, 72px);
-      height: clamp(48px, 8vw, 72px);
+      width: clamp(44px, 7.5vw, 64px);
+      height: clamp(44px, 7.5vw, 64px);
       border-radius: 50%;
       background: var(--darker);
-      border: 3px solid var(--green);
+      border: 2.5px solid rgba(255,77,125,0.7);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: clamp(0.9rem, 2.5vw, 1.3rem);
-      letter-spacing: 0.05em;
-      color: var(--green);
+      font-size: clamp(1.1rem, 2.8vw, 1.5rem);
+      color: var(--pink);
       box-shadow:
-        0 0 16px rgba(57,255,20,0.5),
-        0 0 40px rgba(57,255,20,0.2);
+        0 0 20px rgba(255,77,125,0.45),
+        0 0 50px rgba(255,77,125,0.15);
       animation: vspulse 2.4s ease-in-out infinite;
     }
     @keyframes vspulse {
-      0%, 100% { box-shadow: 0 0 16px rgba(57,255,20,0.5), 0 0 40px rgba(57,255,20,0.2); }
-      50%       { box-shadow: 0 0 26px rgba(57,255,20,0.9), 0 0 60px rgba(57,255,20,0.4); }
+      0%, 100% { box-shadow: 0 0 20px rgba(255,77,125,0.45), 0 0 50px rgba(255,77,125,0.15); }
+      50%       { box-shadow: 0 0 32px rgba(255,77,125,0.8), 0 0 70px rgba(255,77,125,0.3); }
     }
 
     /* ─────────────────── Vote bar ─────────────────── */
@@ -238,41 +279,49 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: 70px;
+      height: 78px;
       z-index: 20;
       display: flex;
       align-items: center;
-      background: rgba(0,0,0,0.88);
-      border-top: 2px solid var(--green);
-      backdrop-filter: blur(6px);
-      gap: 10px;
-      padding: 0 16px;
+      background: rgba(18,9,16,0.92);
+      border-top: 1px solid rgba(255,77,125,0.25);
+      backdrop-filter: blur(14px);
+      gap: 12px;
+      padding: 0 18px;
     }
 
     .vote-btn {
       flex: 1;
-      height: 46px;
+      height: 50px;
       border: none;
-      border-radius: 10px;
-      font-family: 'Arial Black', Arial, sans-serif;
-      font-size: clamp(0.75rem, 2.5vw, 1rem);
-      letter-spacing: 0.07em;
+      border-radius: 25px;
+      font-family: 'Inter', Arial, sans-serif;
+      font-size: clamp(0.72rem, 2.3vw, 0.95rem);
+      font-weight: 700;
+      letter-spacing: 0.05em;
       cursor: pointer;
-      transition: transform 0.12s, filter 0.12s;
+      transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1), filter 0.12s, box-shadow 0.12s;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
+      gap: 7px;
     }
-    .vote-btn:hover  { transform: scale(1.04); filter: brightness(1.2); }
-    .vote-btn:active { transform: scale(0.97); }
+    .vote-btn:hover  { transform: scale(1.05); filter: brightness(1.12); }
+    .vote-btn:active { transform: scale(0.96); }
 
-    #vote-left  { background: linear-gradient(135deg, #1a4d0a, #2e8c10); color: var(--green2); border: 2px solid var(--green); box-shadow: 0 0 14px rgba(57,255,20,0.4); }
-    #vote-right { background: linear-gradient(135deg, #4d2e00, #a06010); color: var(--yellow); border: 2px solid var(--brown); box-shadow: 0 0 14px rgba(200,134,10,0.4); }
+    #vote-left  {
+      background: linear-gradient(135deg, #c2185b, #e91e63, #ff4081);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(233,30,99,0.45);
+    }
+    #vote-right {
+      background: linear-gradient(135deg, #7b1fa2, #9c27b0, #ce93d8);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(156,39,176,0.45);
+    }
 
     .vote-sep {
-      font-size: 1.1rem;
-      color: rgba(255,255,255,0.3);
+      font-size: 1.3rem;
       flex-shrink: 0;
     }
 
@@ -282,12 +331,13 @@
       position: fixed;
       inset: 0;
       z-index: 100;
-      background: rgba(0,0,0,0.82);
+      background: rgba(12,4,15,0.88);
       align-items: center;
       justify-content: center;
       flex-direction: column;
       gap: 18px;
-      animation: fadein 0.25s ease;
+      animation: fadein 0.3s ease;
+      backdrop-filter: blur(6px);
     }
     #winner-overlay.show { display: flex; }
 
@@ -297,59 +347,73 @@
     }
 
     #winner-box {
-      background: rgba(5,20,2,0.95);
-      border: 3px solid var(--green);
-      border-radius: 20px;
-      padding: 36px 48px;
+      background: linear-gradient(160deg, #2a0d2e 0%, #1e0b28 100%);
+      border: 2px solid rgba(255,77,125,0.6);
+      border-radius: 28px;
+      padding: 40px 52px;
       text-align: center;
-      box-shadow: 0 0 60px rgba(57,255,20,0.5);
-      animation: winpop 0.4s cubic-bezier(0.22,1.4,0.55,1);
+      box-shadow: 0 0 80px rgba(255,77,125,0.35), 0 0 140px rgba(194,68,212,0.15);
+      animation: winpop 0.45s cubic-bezier(0.22,1.4,0.55,1);
+      max-width: 90vw;
     }
     @keyframes winpop {
-      from { transform: scale(0.6); opacity: 0; }
-      to   { transform: scale(1);   opacity: 1; }
+      from { transform: scale(0.55); opacity: 0; }
+      to   { transform: scale(1);    opacity: 1; }
     }
 
-    #winner-emoji { font-size: 5rem; line-height: 1; }
+    #winner-emoji { font-size: 5rem; line-height: 1; animation: heartbeat 0.8s ease-in-out 3; }
+    @keyframes heartbeat {
+      0%, 100% { transform: scale(1); }
+      30%       { transform: scale(1.2); }
+      60%       { transform: scale(0.95); }
+    }
+
     #winner-label {
-      font-size: clamp(1.1rem, 4vw, 1.7rem);
-      color: var(--yellow);
-      margin-top: 8px;
+      font-size: clamp(1rem, 3.5vw, 1.5rem);
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--pink), var(--lavender));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-top: 10px;
     }
     #winner-name  {
-      font-size: clamp(1.4rem, 5vw, 2.4rem);
-      color: var(--green);
-      margin-top: 4px;
-      text-shadow: 0 0 20px var(--green);
+      font-size: clamp(1.3rem, 4.5vw, 2.2rem);
+      font-weight: 900;
+      color: #fff;
+      margin-top: 6px;
+      text-shadow: 0 0 24px rgba(255,77,125,0.6);
     }
     #winner-wins  {
-      font-size: clamp(0.8rem, 2vw, 1rem);
-      font-family: Arial, sans-serif;
-      font-weight: normal;
-      color: rgba(255,255,255,0.6);
+      font-size: clamp(0.75rem, 1.9vw, 0.95rem);
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
       margin-top: 10px;
     }
     #next-btn {
-      margin-top: 22px;
-      padding: 14px 36px;
-      background: var(--green);
-      color: #000;
+      margin-top: 26px;
+      padding: 15px 40px;
+      background: linear-gradient(135deg, var(--rose), var(--purple));
+      color: #fff;
       border: none;
-      border-radius: 10px;
-      font-family: 'Arial Black', Arial, sans-serif;
-      font-size: clamp(0.9rem, 2.5vw, 1.15rem);
+      border-radius: 25px;
+      font-family: 'Inter', Arial, sans-serif;
+      font-size: clamp(0.88rem, 2.3vw, 1.1rem);
+      font-weight: 700;
       cursor: pointer;
-      letter-spacing: 0.08em;
-      transition: transform 0.12s, filter 0.12s;
+      letter-spacing: 0.05em;
+      box-shadow: 0 4px 24px rgba(255,45,110,0.45);
+      transition: transform 0.14s cubic-bezier(0.34,1.56,0.64,1), filter 0.12s;
     }
-    #next-btn:hover  { transform: scale(1.06); filter: brightness(1.15); }
-    #next-btn:active { transform: scale(0.97); }
+    #next-btn:hover  { transform: scale(1.07); filter: brightness(1.1); }
+    #next-btn:active { transform: scale(0.96); }
 
     /* ─────────────────── Responsive tweaks ─────────────────── */
     @media (max-width: 480px) {
-      #header h1 { font-size: 1.1rem; }
-      .fart-blob  { font-size: 4.5rem; }
-      #winner-box { padding: 24px 28px; }
+      #header h1 { font-size: 1.05rem; }
+      .fart-blob  { font-size: 3.2rem; }
+      .profile-ring { width: 80px; height: 80px; }
+      #winner-box { padding: 28px 24px; }
     }
   </style>
 </head>
@@ -359,7 +423,7 @@
 
   <!-- Header -->
   <div id="header">
-    <h1>💨 STINKR</h1>
+    <h1>💕 STINKR</h1>
     <div id="champion-bar">Loading the stench…</div>
   </div>
 
@@ -369,20 +433,24 @@
     <!-- Left Side -->
     <div class="side" id="left-side" role="button" aria-label="Play left fart" tabindex="0">
       <div class="side-glow"></div>
-      <span class="win-badge" id="left-badge">👑 0 WINS</span>
-      <div class="fart-blob" id="left-blob">💨</div>
+      <span class="win-badge" id="left-badge">🔥 0 WINS</span>
+      <div class="profile-ring">
+        <div class="fart-blob" id="left-blob">💨</div>
+      </div>
       <div class="fart-name" id="left-name">Loading…</div>
-      <div class="fart-subtitle">Click to sniff!</div>
+      <div class="fart-subtitle">Tap to sniff 👃</div>
       <div class="play-status" id="left-status"></div>
     </div>
 
     <!-- Right Side -->
     <div class="side" id="right-side" role="button" aria-label="Play right fart" tabindex="0">
       <div class="side-glow"></div>
-      <span class="win-badge" id="right-badge">👑 0 WINS</span>
-      <div class="fart-blob" id="right-blob">💨</div>
+      <span class="win-badge" id="right-badge">🔥 0 WINS</span>
+      <div class="profile-ring">
+        <div class="fart-blob" id="right-blob">💨</div>
+      </div>
       <div class="fart-name" id="right-name">Loading…</div>
-      <div class="fart-subtitle">Click to sniff!</div>
+      <div class="fart-subtitle">Tap to sniff 👃</div>
       <div class="play-status" id="right-status"></div>
     </div>
 
@@ -390,24 +458,24 @@
 
   <!-- VS circle -->
   <div id="vs-divider">
-    <div id="vs-circle">VS</div>
+    <div id="vs-circle">💘</div>
   </div>
 
   <!-- Vote bar -->
   <div id="vote-bar">
-    <button class="vote-btn" id="vote-left"  onclick="castVote('left')">👑 THIS ONE STINKS BETTER</button>
-    <span class="vote-sep">💨</span>
-    <button class="vote-btn" id="vote-right" onclick="castVote('right')">THIS ONE STINKS BETTER 👑</button>
+    <button class="vote-btn" id="vote-left"  onclick="castVote('left')">❤️ Swipe Right</button>
+    <span class="vote-sep">💋</span>
+    <button class="vote-btn" id="vote-right" onclick="castVote('right')">Swipe Right ❤️</button>
   </div>
 
   <!-- Winner overlay -->
   <div id="winner-overlay">
     <div id="winner-box">
-      <div id="winner-emoji">💨</div>
-      <div id="winner-label">🏆 STINKR OF THE ROUND 🏆</div>
+      <div id="winner-emoji">💕</div>
+      <div id="winner-label">✨ IT'S A MATCH! ✨</div>
       <div id="winner-name"></div>
       <div id="winner-wins"></div>
-      <button id="next-btn" onclick="nextRound()">Next Challenger 💨</button>
+      <button id="next-btn" onclick="nextRound()">Keep Swiping 💨</button>
     </div>
   </div>
 
@@ -482,11 +550,11 @@
 
     function updateChampBar() {
       if (!champion) {
-        champBar.textContent = '💨 Who will claim the throne of stench?';
+        champBar.textContent = '💕 Who will steal your heart (and nose)?';
       } else {
         champBar.textContent =
-          '👑 Reigning Champion: ' + champion.fart.name +
-          ' — ' + champion.wins + ' win' + (champion.wins === 1 ? '' : 's');
+          '🔥 Hottest Stench: ' + champion.fart.name +
+          ' — ' + champion.wins + ' match' + (champion.wins === 1 ? '' : 'es');
       }
     }
 
@@ -522,11 +590,11 @@
       if (champ) {
         var champIsLeft = leftFart === champ;
         if (champIsLeft) {
-          leftBadge.textContent  = '👑 ' + champion.wins + ' WIN' + (champion.wins === 1 ? '' : 'S');
+          leftBadge.textContent  = '🔥 ' + champion.wins + ' WIN' + (champion.wins === 1 ? '' : 'S');
           leftBadge.style.display  = 'inline-block';
           rightBadge.style.display = 'none';
         } else {
-          rightBadge.textContent = '👑 ' + champion.wins + ' WIN' + (champion.wins === 1 ? '' : 'S');
+          rightBadge.textContent = '🔥 ' + champion.wins + ' WIN' + (champion.wins === 1 ? '' : 'S');
           rightBadge.style.display  = 'inline-block';
           leftBadge.style.display   = 'none';
         }
@@ -549,7 +617,7 @@
       triggerJiggle(side);
       status.textContent = '💨 *pfffft*';
       setTimeout(function () {
-        if (status.textContent === '💨 *pfffft*') status.textContent = '▶ Click again to replay';
+        if (status.textContent === '💨 *pfffft*') status.textContent = '▶ Tap again to replay';
       }, 1800);
     }
 
@@ -578,8 +646,8 @@
       winnerName.textContent  = winner.name;
       winnerWins.textContent  =
         champion.wins === 1
-          ? '🏆 First win — they\'re coming for the throne!'
-          : '🏆 ' + champion.wins + ' wins and counting — unstoppable!';
+          ? '💕 First match — your stench is irresistible!'
+          : '💕 ' + champion.wins + ' matches and counting — you\'re a catch!';
 
       overlay.classList.add('show');
     };
@@ -590,12 +658,13 @@
       setupRound();
     };
 
-    /* ── Particle system ─────────────────────────────── */
+    /* ── Particle system (floating hearts) ──────────────── */
     (function initParticles() {
       var canvas = document.getElementById('particles');
       var ctx    = canvas.getContext('2d');
       var W, H;
       var particles = [];
+      var HEARTS = ['❤️','💕','💗','💖','💓','💘','✨'];
 
       function resize() {
         W = canvas.width  = window.innerWidth;
@@ -607,23 +676,24 @@
       function rand(min, max) { return min + Math.random() * (max - min); }
 
       function spawnParticle() {
-        var side = Math.random() < 0.5 ? 'left' : 'right';
         return {
-          x:     side === 'left' ? rand(0, W * 0.45) : rand(W * 0.55, W),
-          y:     rand(H * 0.2, H * 0.9),
-          r:     rand(4, 18),
-          vx:    rand(-0.4, 0.4),
-          vy:    rand(-0.6, -1.6),
-          life:  0,
-          maxLife: rand(120, 240),
-          hue:   side === 'left' ? rand(80, 130) : rand(40, 70),
-          sat:   rand(60, 100),
+          x:       rand(W * 0.05, W * 0.95),
+          y:       H + rand(10, 40),
+          size:    rand(10, 26),
+          vx:      rand(-0.5, 0.5),
+          vy:      rand(-0.5, -1.4),
+          life:    0,
+          maxLife: rand(150, 300),
+          heart:   HEARTS[Math.floor(Math.random() * HEARTS.length)],
+          wobble:  rand(0, Math.PI * 2),
+          wobbleSpeed: rand(0.02, 0.06),
         };
       }
 
-      for (var i = 0; i < 30; i++) {
+      for (var i = 0; i < 22; i++) {
         var p = spawnParticle();
-        p.life = Math.floor(Math.random() * p.maxLife); // stagger
+        p.life = Math.floor(Math.random() * p.maxLife);
+        p.y    = rand(0, H);
         particles.push(p);
       }
 
@@ -632,21 +702,22 @@
         for (var i = 0; i < particles.length; i++) {
           var p = particles[i];
           p.life++;
-          p.x += p.vx;
+          p.wobble += p.wobbleSpeed;
+          p.x += p.vx + Math.sin(p.wobble) * 0.4;
           p.y += p.vy;
-          p.r  = Math.max(0, p.r - 0.04);
 
-          if (p.life >= p.maxLife || p.r <= 0.5) {
+          if (p.life >= p.maxLife || p.y < -40) {
             particles[i] = spawnParticle();
             continue;
           }
 
-          var alpha = 1 - p.life / p.maxLife;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = 'hsla(' + p.hue + ',' + p.sat + '%,55%,' + (alpha * 0.35) + ')';
-          ctx.fill();
+          var alpha = Math.min(1, (1 - p.life / p.maxLife) * 2);
+          ctx.globalAlpha = alpha * 0.55;
+          ctx.font = p.size + 'px serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(p.heart, p.x, p.y);
         }
+        ctx.globalAlpha = 1;
         requestAnimationFrame(frame);
       }
       requestAnimationFrame(frame);
