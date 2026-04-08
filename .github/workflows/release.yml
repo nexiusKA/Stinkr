@@ -1,0 +1,86 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'js/version.js'   # Prevent an infinite loop when CI commits version.js
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Inject build info into version.js
+        run: |
+          mkdir -p js
+          printf '%s\n' \
+            '// ── version.js ───────────────────────────────────────────────' \
+            '// Build metadata — overwritten by CI on each release build.' \
+            '// In local dev this file is used as-is (all fields read "dev").' \
+            'const BUILD_INFO = (function () {' \
+            '  return {' \
+            "    run:    '${GITHUB_RUN_NUMBER}'," \
+            "    sha:    '${GITHUB_SHA}'," \
+            "    branch: '${GITHUB_REF_NAME}'," \
+            "    date:   '$(date -u +%Y-%m-%d)'," \
+            '  };' \
+            '})();' > js/version.js
+
+      - name: Commit and push build info
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add js/version.js
+          if ! git diff --staged --quiet; then
+            git commit -m "chore: inject build info for run ${{ github.run_number }}"
+            git push
+          fi
+
+      - name: Package game files
+        run: zip -r game.zip . --exclude '.git/*' --exclude '.github/*'
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: game-dist
+          path: game.zip
+          retention-days: 90
+
+      - name: Create or update latest release
+        run: |
+          gh release delete latest --yes 2>/dev/null || true
+          gh release create latest game.zip \
+            --title "Latest Build (run ${{ github.run_number }})" \
+            --notes "Built from commit ${{ github.sha }} on branch \`${{ github.ref_name }}\` on $(date -u +%Y-%m-%d)" \
+            --prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
