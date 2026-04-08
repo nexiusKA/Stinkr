@@ -1,2 +1,2 @@
-# FartTinder
-Fart Tinder
+# Stinkr
+Stinkr
