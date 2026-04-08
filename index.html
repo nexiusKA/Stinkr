@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stinkr 💨 Fart Battle</title>
+  <style>
+    /* ─────────────────── Reset & Base ─────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:   #39ff14;
+      --green2:  #7fff00;
+      --brown:   #c8860a;
+      --yellow:  #ffe600;
+      --dark:    #0d0d0d;
+      --darker:  #080808;
+      --left-bg: #0a1a06;
+      --right-bg:#1a1100;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Arial Black', 'Arial Bold', Arial, sans-serif;
+      background: var(--dark);
+      color: #fff;
+      user-select: none;
+    }
+
+    /* ─────────────────── Particle canvas ─────────────────── */
+    #particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─────────────────── Header bar ─────────────────── */
+    #header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 10px 20px;
+      background: rgba(0,0,0,0.82);
+      border-bottom: 2px solid var(--green);
+      backdrop-filter: blur(6px);
+    }
+
+    #header h1 {
+      font-size: clamp(1.2rem, 4vw, 1.9rem);
+      letter-spacing: 0.12em;
+      background: linear-gradient(90deg, var(--green), var(--yellow), var(--brown));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 8px rgba(57,255,20,0.6));
+      flex-shrink: 0;
+    }
+
+    #champion-bar {
+      font-size: clamp(0.65rem, 2.2vw, 0.88rem);
+      color: var(--yellow);
+      text-align: center;
+      min-height: 1.2em;
+      font-family: Arial, sans-serif;
+      font-weight: normal;
+      filter: drop-shadow(0 0 6px rgba(255,230,0,0.5));
+    }
+
+    /* ─────────────────── Arena ─────────────────── */
+    #arena {
+      position: fixed;
+      inset: 0;
+      top: 56px;  /* below header */
+      bottom: 70px; /* above footer vote area */
+      display: flex;
+    }
+
+    /* ─────────────────── Side panels ─────────────────── */
+    .side {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.2s;
+    }
+
+    #left-side  { background: var(--left-bg);  border-right: 2px solid rgba(57,255,20,0.25); }
+    #right-side { background: var(--right-bg); border-left:  2px solid rgba(200,134,10,0.25); }
+
+    .side:hover { filter: brightness(1.12); }
+
+    .side-glow {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+      border-radius: 0;
+    }
+    #left-side  .side-glow { background: radial-gradient(ellipse at center, rgba(57,255,20,0.18) 0%, transparent 70%); }
+    #right-side .side-glow { background: radial-gradient(ellipse at center, rgba(200,134,10,0.22) 0%, transparent 70%); }
+    .side:hover .side-glow  { opacity: 1; }
+    .side.playing .side-glow { opacity: 1 !important; }
+
+    /* Fart cloud blob */
+    .fart-blob {
+      font-size: clamp(5rem, 14vw, 10rem);
+      line-height: 1;
+      margin-bottom: 12px;
+      filter: drop-shadow(0 0 24px rgba(57,255,20,0.5));
+      transition: transform 0.1s;
+      pointer-events: none;
+    }
+    #right-side .fart-blob {
+      filter: drop-shadow(0 0 24px rgba(255,200,0,0.55));
+    }
+    .side.playing .fart-blob {
+      animation: fartjiggle 0.45s ease-in-out;
+    }
+
+    @keyframes fartjiggle {
+      0%   { transform: scale(1)    rotate(0deg); }
+      20%  { transform: scale(1.25) rotate(-6deg); }
+      40%  { transform: scale(0.92) rotate(4deg); }
+      60%  { transform: scale(1.15) rotate(-3deg); }
+      80%  { transform: scale(0.97) rotate(2deg); }
+      100% { transform: scale(1)    rotate(0deg); }
+    }
+
+    .fart-name {
+      font-size: clamp(1.1rem, 3.5vw, 2rem);
+      letter-spacing: 0.07em;
+      text-align: center;
+      padding: 0 12px;
+      pointer-events: none;
+      text-shadow: 0 0 12px currentColor;
+    }
+    #left-side  .fart-name { color: var(--green); }
+    #right-side .fart-name { color: var(--yellow); }
+
+    .fart-subtitle {
+      font-size: clamp(0.7rem, 1.8vw, 0.92rem);
+      font-family: Arial, sans-serif;
+      font-weight: normal;
+      color: rgba(255,255,255,0.5);
+      margin-top: 6px;
+      pointer-events: none;
+    }
+
+    .play-hint {
+      font-size: clamp(0.65rem, 1.6vw, 0.82rem);
+      font-family: Arial, sans-serif;
+      font-weight: normal;
+      margin-top: 18px;
+      opacity: 0.55;
+      letter-spacing: 0.08em;
+      pointer-events: none;
+    }
+
+    .play-status {
+      font-size: clamp(0.75rem, 1.8vw, 0.95rem);
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      margin-top: 10px;
+      min-height: 1.3em;
+      color: var(--green2);
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    #right-side .play-status { color: var(--yellow); }
+
+    /* Win badge */
+    .win-badge {
+      display: none;
+      position: absolute;
+      top: 16px;
+      background: var(--green);
+      color: #000;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-family: Arial, sans-serif;
+    }
+    #left-side  .win-badge { left: 16px;  background: var(--green); }
+    #right-side .win-badge { right: 16px; background: var(--brown); color: #fff; }
+
+    /* ─────────────────── VS divider ─────────────────── */
+    #vs-divider {
+      position: fixed;
+      left: 50%;
+      top: 56px;
+      bottom: 70px;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    #vs-circle {
+      width: clamp(48px, 8vw, 72px);
+      height: clamp(48px, 8vw, 72px);
+      border-radius: 50%;
+      background: var(--darker);
+      border: 3px solid var(--green);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(0.9rem, 2.5vw, 1.3rem);
+      letter-spacing: 0.05em;
+      color: var(--green);
+      box-shadow:
+        0 0 16px rgba(57,255,20,0.5),
+        0 0 40px rgba(57,255,20,0.2);
+      animation: vspulse 2.4s ease-in-out infinite;
+    }
+    @keyframes vspulse {
+      0%, 100% { box-shadow: 0 0 16px rgba(57,255,20,0.5), 0 0 40px rgba(57,255,20,0.2); }
+      50%       { box-shadow: 0 0 26px rgba(57,255,20,0.9), 0 0 60px rgba(57,255,20,0.4); }
+    }
+
+    /* ─────────────────── Vote bar ─────────────────── */
+    #vote-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 70px;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      background: rgba(0,0,0,0.88);
+      border-top: 2px solid var(--green);
+      backdrop-filter: blur(6px);
+      gap: 10px;
+      padding: 0 16px;
+    }
+
+    .vote-btn {
+      flex: 1;
+      height: 46px;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(0.75rem, 2.5vw, 1rem);
+      letter-spacing: 0.07em;
+      cursor: pointer;
+      transition: transform 0.12s, filter 0.12s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .vote-btn:hover  { transform: scale(1.04); filter: brightness(1.2); }
+    .vote-btn:active { transform: scale(0.97); }
+
+    #vote-left  { background: linear-gradient(135deg, #1a4d0a, #2e8c10); color: var(--green2); border: 2px solid var(--green); box-shadow: 0 0 14px rgba(57,255,20,0.4); }
+    #vote-right { background: linear-gradient(135deg, #4d2e00, #a06010); color: var(--yellow); border: 2px solid var(--brown); box-shadow: 0 0 14px rgba(200,134,10,0.4); }
+
+    .vote-sep {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.3);
+      flex-shrink: 0;
+    }
+
+    /* ─────────────────── Winner overlay ─────────────────── */
+    #winner-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0,0,0,0.82);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 18px;
+      animation: fadein 0.25s ease;
+    }
+    #winner-overlay.show { display: flex; }
+
+    @keyframes fadein {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    #winner-box {
+      background: rgba(5,20,2,0.95);
+      border: 3px solid var(--green);
+      border-radius: 20px;
+      padding: 36px 48px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(57,255,20,0.5);
+      animation: winpop 0.4s cubic-bezier(0.22,1.4,0.55,1);
+    }
+    @keyframes winpop {
+      from { transform: scale(0.6); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    #winner-emoji { font-size: 5rem; line-height: 1; }
+    #winner-label {
+      font-size: clamp(1.1rem, 4vw, 1.7rem);
+      color: var(--yellow);
+      margin-top: 8px;
+    }
+    #winner-name  {
+      font-size: clamp(1.4rem, 5vw, 2.4rem);
+      color: var(--green);
+      margin-top: 4px;
+      text-shadow: 0 0 20px var(--green);
+    }
+    #winner-wins  {
+      font-size: clamp(0.8rem, 2vw, 1rem);
+      font-family: Arial, sans-serif;
+      font-weight: normal;
+      color: rgba(255,255,255,0.6);
+      margin-top: 10px;
+    }
+    #next-btn {
+      margin-top: 22px;
+      padding: 14px 36px;
+      background: var(--green);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(0.9rem, 2.5vw, 1.15rem);
+      cursor: pointer;
+      letter-spacing: 0.08em;
+      transition: transform 0.12s, filter 0.12s;
+    }
+    #next-btn:hover  { transform: scale(1.06); filter: brightness(1.15); }
+    #next-btn:active { transform: scale(0.97); }
+
+    /* ─────────────────── Responsive tweaks ─────────────────── */
+    @media (max-width: 480px) {
+      #header h1 { font-size: 1.1rem; }
+      .fart-blob  { font-size: 4.5rem; }
+      #winner-box { padding: 24px 28px; }
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="particles"></canvas>
+
+  <!-- Header -->
+  <div id="header">
+    <h1>💨 STINKR</h1>
+    <div id="champion-bar">Loading the stench…</div>
+  </div>
+
+  <!-- Arena -->
+  <div id="arena">
+
+    <!-- Left Side -->
+    <div class="side" id="left-side" role="button" aria-label="Play left fart" tabindex="0">
+      <div class="side-glow"></div>
+      <span class="win-badge" id="left-badge">👑 0 WINS</span>
+      <div class="fart-blob" id="left-blob">💨</div>
+      <div class="fart-name" id="left-name">Loading…</div>
+      <div class="fart-subtitle">Click to sniff!</div>
+      <div class="play-status" id="left-status"></div>
+    </div>
+
+    <!-- Right Side -->
+    <div class="side" id="right-side" role="button" aria-label="Play right fart" tabindex="0">
+      <div class="side-glow"></div>
+      <span class="win-badge" id="right-badge">👑 0 WINS</span>
+      <div class="fart-blob" id="right-blob">💨</div>
+      <div class="fart-name" id="right-name">Loading…</div>
+      <div class="fart-subtitle">Click to sniff!</div>
+      <div class="play-status" id="right-status"></div>
+    </div>
+
+  </div>
+
+  <!-- VS circle -->
+  <div id="vs-divider">
+    <div id="vs-circle">VS</div>
+  </div>
+
+  <!-- Vote bar -->
+  <div id="vote-bar">
+    <button class="vote-btn" id="vote-left"  onclick="castVote('left')">👑 THIS ONE STINKS BETTER</button>
+    <span class="vote-sep">💨</span>
+    <button class="vote-btn" id="vote-right" onclick="castVote('right')">THIS ONE STINKS BETTER 👑</button>
+  </div>
+
+  <!-- Winner overlay -->
+  <div id="winner-overlay">
+    <div id="winner-box">
+      <div id="winner-emoji">💨</div>
+      <div id="winner-label">🏆 STINKR OF THE ROUND 🏆</div>
+      <div id="winner-name"></div>
+      <div id="winner-wins"></div>
+      <button id="next-btn" onclick="nextRound()">Next Challenger 💨</button>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    /* ── Fart catalogue ────────────────────────────────── */
+    var FARTS = [
+      { name: 'The Awful Awakening', file: 'assets/sounds/awful.mp3',           emoji: '💀' },
+      { name: 'Kuh-Pop Special',     file: 'assets/sounds/platsch_kuhpop.mp3',  emoji: '🐄' },
+      { name: 'Super Blast',         file: 'assets/sounds/super_blast.mp3',     emoji: '💥' },
+      { name: 'The Solid 6/10',      file: 'assets/sounds/6_of_10.mp3',         emoji: '⭐' },
+      { name: 'Pouring Tea',         file: 'assets/sounds/pouring_tea.mp3',     emoji: '☕' },
+      { name: 'The Golden Shower',   file: 'assets/sounds/piss.mp3',            emoji: '💛' },
+    ];
+
+    /* ── State ─────────────────────────────────────────── */
+    var champion = null;   // { fart, wins } or null first round
+    var leftFart  = null;
+    var rightFart = null;
+    var audios    = { left: null, right: null };
+
+    /* ── DOM refs ─────────────────────────────────────── */
+    var leftSide  = document.getElementById('left-side');
+    var rightSide = document.getElementById('right-side');
+    var leftBlob  = document.getElementById('left-blob');
+    var rightBlob = document.getElementById('right-blob');
+    var leftName  = document.getElementById('left-name');
+    var rightName = document.getElementById('right-name');
+    var leftStatus  = document.getElementById('left-status');
+    var rightStatus = document.getElementById('right-status');
+    var leftBadge   = document.getElementById('left-badge');
+    var rightBadge  = document.getElementById('right-badge');
+    var champBar    = document.getElementById('champion-bar');
+    var overlay     = document.getElementById('winner-overlay');
+    var winnerName  = document.getElementById('winner-name');
+    var winnerWins  = document.getElementById('winner-wins');
+    var winnerEmoji = document.getElementById('winner-emoji');
+
+    /* ── Helpers ─────────────────────────────────────── */
+    function pickRandom(exclude) {
+      var pool = FARTS.filter(function (f) { return f !== exclude; });
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    function loadAudio(side, fart) {
+      if (audios[side]) {
+        audios[side].pause();
+        audios[side].src = '';
+      }
+      var a = new Audio(fart.file);
+      a.preload = 'auto';
+      audios[side] = a;
+    }
+
+    function playAudio(side) {
+      var a = audios[side];
+      if (!a) return;
+      a.currentTime = 0;
+      a.play().catch(function () {/* autoplay guard – user clicked, should be fine */});
+    }
+
+    function triggerJiggle(side) {
+      var el = side === 'left' ? leftSide : rightSide;
+      el.classList.remove('playing');
+      void el.offsetWidth; // force reflow to restart animation
+      el.classList.add('playing');
+      setTimeout(function () { el.classList.remove('playing'); }, 500);
+    }
+
+    function updateChampBar() {
+      if (!champion) {
+        champBar.textContent = '💨 Who will claim the throne of stench?';
+      } else {
+        champBar.textContent =
+          '👑 Reigning Champion: ' + champion.fart.name +
+          ' — ' + champion.wins + ' win' + (champion.wins === 1 ? '' : 's');
+      }
+    }
+
+    /* ── Round setup ─────────────────────────────────── */
+    function setupRound() {
+      var champ = champion ? champion.fart : null;
+      var challenger = pickRandom(champ);
+
+      // Champion goes on a random side each round
+      var champSide = champ ? (Math.random() < 0.5 ? 'left' : 'right') : null;
+
+      if (champ && champSide === 'left') {
+        leftFart  = champ;
+        rightFart = challenger;
+      } else if (champ) {
+        leftFart  = challenger;
+        rightFart = champ;
+      } else {
+        // First round: two random farts
+        leftFart  = pickRandom(null);
+        rightFart = pickRandom(leftFart);
+      }
+
+      // Update DOM
+      leftBlob.textContent  = leftFart.emoji;
+      rightBlob.textContent = rightFart.emoji;
+      leftName.textContent  = leftFart.name;
+      rightName.textContent = rightFart.name;
+      leftStatus.textContent  = '';
+      rightStatus.textContent = '';
+
+      // Show/hide champion badge
+      if (champ) {
+        var champIsLeft = leftFart === champ;
+        if (champIsLeft) {
+          leftBadge.textContent  = '👑 ' + champion.wins + ' WIN' + (champion.wins === 1 ? '' : 'S');
+          leftBadge.style.display  = 'inline-block';
+          rightBadge.style.display = 'none';
+        } else {
+          rightBadge.textContent = '👑 ' + champion.wins + ' WIN' + (champion.wins === 1 ? '' : 'S');
+          rightBadge.style.display  = 'inline-block';
+          leftBadge.style.display   = 'none';
+        }
+      } else {
+        leftBadge.style.display  = 'none';
+        rightBadge.style.display = 'none';
+      }
+
+      // Preload audio
+      loadAudio('left',  leftFart);
+      loadAudio('right', rightFart);
+
+      updateChampBar();
+    }
+
+    /* ── Click handlers ──────────────────────────────── */
+    function handleSideClick(side) {
+      var status = side === 'left' ? leftStatus : rightStatus;
+      playAudio(side);
+      triggerJiggle(side);
+      status.textContent = '💨 *pfffft*';
+      setTimeout(function () {
+        if (status.textContent === '💨 *pfffft*') status.textContent = '▶ Click again to replay';
+      }, 1800);
+    }
+
+    leftSide.addEventListener('click',   function () { handleSideClick('left'); });
+    rightSide.addEventListener('click',  function () { handleSideClick('right'); });
+    leftSide.addEventListener('keydown',  function (e) { if (e.key === 'Enter' || e.key === ' ') handleSideClick('left'); });
+    rightSide.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') handleSideClick('right'); });
+
+    /* ── Voting ──────────────────────────────────────── */
+    window.castVote = function (side) {
+      var winner = side === 'left' ? leftFart : rightFart;
+
+      // Stop both audio
+      if (audios.left)  { audios.left.pause();  audios.left.currentTime  = 0; }
+      if (audios.right) { audios.right.pause(); audios.right.currentTime = 0; }
+
+      // Update champion
+      if (champion && champion.fart === winner) {
+        champion.wins += 1;
+      } else {
+        champion = { fart: winner, wins: 1 };
+      }
+
+      // Show overlay
+      winnerEmoji.textContent = winner.emoji;
+      winnerName.textContent  = winner.name;
+      winnerWins.textContent  =
+        champion.wins === 1
+          ? '🏆 First win — they\'re coming for the throne!'
+          : '🏆 ' + champion.wins + ' wins and counting — unstoppable!';
+
+      overlay.classList.add('show');
+    };
+
+    /* ── Next round ──────────────────────────────────── */
+    window.nextRound = function () {
+      overlay.classList.remove('show');
+      setupRound();
+    };
+
+    /* ── Particle system ─────────────────────────────── */
+    (function initParticles() {
+      var canvas = document.getElementById('particles');
+      var ctx    = canvas.getContext('2d');
+      var W, H;
+      var particles = [];
+
+      function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      function rand(min, max) { return min + Math.random() * (max - min); }
+
+      function spawnParticle() {
+        var side = Math.random() < 0.5 ? 'left' : 'right';
+        return {
+          x:     side === 'left' ? rand(0, W * 0.45) : rand(W * 0.55, W),
+          y:     rand(H * 0.2, H * 0.9),
+          r:     rand(4, 18),
+          vx:    rand(-0.4, 0.4),
+          vy:    rand(-0.6, -1.6),
+          life:  0,
+          maxLife: rand(120, 240),
+          hue:   side === 'left' ? rand(80, 130) : rand(40, 70),
+          sat:   rand(60, 100),
+        };
+      }
+
+      for (var i = 0; i < 30; i++) {
+        var p = spawnParticle();
+        p.life = Math.floor(Math.random() * p.maxLife); // stagger
+        particles.push(p);
+      }
+
+      function frame() {
+        ctx.clearRect(0, 0, W, H);
+        for (var i = 0; i < particles.length; i++) {
+          var p = particles[i];
+          p.life++;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.r  = Math.max(0, p.r - 0.04);
+
+          if (p.life >= p.maxLife || p.r <= 0.5) {
+            particles[i] = spawnParticle();
+            continue;
+          }
+
+          var alpha = 1 - p.life / p.maxLife;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'hsla(' + p.hue + ',' + p.sat + '%,55%,' + (alpha * 0.35) + ')';
+          ctx.fill();
+        }
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    })();
+
+    /* ── Boot ────────────────────────────────────────── */
+    setupRound();
+
+  })();
+  </script>
+
+</body>
+</html>
