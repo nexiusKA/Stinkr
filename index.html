@@ -174,10 +174,17 @@
     .side.playing .side-glow { opacity: 1 !important; }
 
     /* Fart cloud blob */
+    .blob-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
     .fart-blob {
       font-size: clamp(5rem, 14vw, 10rem);
       line-height: 1;
-      margin-bottom: 12px;
       filter: drop-shadow(0 0 24px rgba(57,255,20,0.5));
       transition: transform 0.2s var(--ease-bounce), filter 0.3s;
       pointer-events: none;
@@ -210,25 +217,44 @@
     #right-side .fart-name { color: var(--yellow); }
 
     .fart-subtitle {
+      position: absolute;
+      bottom: 8px;
+      left: 0;
+      right: 0;
+      text-align: center;
       font-size: clamp(0.7rem, 1.8vw, 0.92rem);
       font-family: Arial, sans-serif;
       font-weight: normal;
-      color: rgba(255,255,255,0.5);
-      margin-top: 6px;
+      color: #fff;
+      background: rgba(0,0,0,0.52);
+      padding: 3px 8px;
+      border-radius: 8px;
       pointer-events: none;
     }
 
     .play-status {
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      transform: translateY(-50%);
+      text-align: center;
       font-size: clamp(0.75rem, 1.8vw, 0.95rem);
       font-family: Arial, sans-serif;
       font-weight: bold;
-      margin-top: 10px;
-      min-height: 1.3em;
       color: var(--green2);
+      background: rgba(0,0,0,0.55);
+      padding: 4px 10px;
+      border-radius: 8px;
+      min-height: 1.3em;
       pointer-events: none;
       transition: opacity 0.3s;
     }
     #right-side .play-status { color: var(--yellow); }
+    /* Hide play-status background when empty; hide subtitle when status is active */
+    .play-status:empty { background: transparent; }
+    .play-status:not(:empty) ~ .fart-subtitle,
+    .blob-wrapper:has(.play-status:not(:empty)) .fart-subtitle { display: none; }
 
     /* Win badge */
     .win-badge {
@@ -1039,10 +1065,11 @@
       }
 
       /* ── Fart content ── */
-      .fart-blob { font-size: 3.6rem; margin-bottom: 6px; }
+      .fart-blob { font-size: 3.6rem; }
+      .blob-wrapper { margin-bottom: 6px; }
       .fart-name { font-size: 1rem; letter-spacing: 0.05em; }
-      .fart-subtitle { font-size: 0.67rem; margin-top: 4px; }
-      .play-status { font-size: 0.7rem; margin-top: 6px; min-height: 1.1em; }
+      .fart-subtitle { font-size: 0.67rem; bottom: 4px; }
+      .play-status { font-size: 0.7rem; min-height: 1.1em; }
 
       /* ── Win badge ── */
       .win-badge { font-size: 0.66rem; padding: 3px 9px; top: 10px; }
@@ -1165,10 +1192,12 @@
     <div class="side" id="left-side" role="button" aria-label="Play left fart" tabindex="0">
       <div class="side-glow"></div>
       <span class="win-badge" id="left-badge">👑 0 WINS</span>
-      <div class="fart-blob" id="left-blob">💨</div>
+      <div class="blob-wrapper">
+        <div class="fart-blob" id="left-blob">💨</div>
+        <div class="play-status" id="left-status"></div>
+        <div class="fart-subtitle">Click to sniff!</div>
+      </div>
       <div class="fart-name" id="left-name">Loading…</div>
-      <div class="fart-subtitle">Click to sniff!</div>
-      <div class="play-status" id="left-status"></div>
       <div class="rating-panel" id="left-rating-panel">
         <div class="rating-label">Rate this fart:</div>
         <div class="rating-stars" id="left-stars"></div>
@@ -1180,10 +1209,12 @@
     <div class="side" id="right-side" role="button" aria-label="Play right fart" tabindex="0">
       <div class="side-glow"></div>
       <span class="win-badge" id="right-badge">👑 0 WINS</span>
-      <div class="fart-blob" id="right-blob">💨</div>
+      <div class="blob-wrapper">
+        <div class="fart-blob" id="right-blob">💨</div>
+        <div class="play-status" id="right-status"></div>
+        <div class="fart-subtitle">Click to sniff!</div>
+      </div>
       <div class="fart-name" id="right-name">Loading…</div>
-      <div class="fart-subtitle">Click to sniff!</div>
-      <div class="play-status" id="right-status"></div>
       <div class="rating-panel" id="right-rating-panel">
         <div class="rating-label">Rate this fart:</div>
         <div class="rating-stars" id="right-stars"></div>
@@ -1193,8 +1224,8 @@
 
     <!-- Round intro animation (fight-game style) -->
     <div id="round-intro">
-      <div id="round-intro-label">ROUND <span id="round-intro-num">1</span></div>
-      <div id="round-intro-fight">FIGHT! 💨</div>
+      <div id="round-intro-label">GET READY</div>
+      <div id="round-intro-fight">FART! 💨</div>
     </div>
 
   </div>
@@ -1878,9 +1909,7 @@
 
       // Fight-game round intro animation (≤1.5 s, first round only)
       if (winnersThisSession === 0) {
-        var introEl   = document.getElementById('round-intro');
-        var introNum  = document.getElementById('round-intro-num');
-        introNum.textContent = '1';
+        var introEl = document.getElementById('round-intro');
         introEl.classList.remove('playing');
         // Force reflow so removing+re-adding the class restarts the animation
         void introEl.offsetWidth;
