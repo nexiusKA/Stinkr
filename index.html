@@ -2134,14 +2134,15 @@
         entry.totalRating = entry.totalRating - prevRating + rating;
         var raterName = playerName || 'Anonymous';
         var found = false;
-        for (var r = 0; r < entry.ratings.length; r++) {
-          if (entry.ratings[r].name === raterName) {
-            entry.ratings[r].value = rating;
+        for (var idx = 0; idx < entry.ratings.length; idx++) {
+          if (entry.ratings[idx].name === raterName) {
+            entry.ratings[idx].value = rating;
             found = true;
             break;
           }
         }
         if (!found) {
+          entry.timesRated += 1;
           entry.ratings.push({ name: raterName, value: rating });
         }
       } else {
