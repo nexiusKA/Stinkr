@@ -1353,8 +1353,9 @@
 
     function fbSaveRating(fartName, value, raterName) {
       if (!fbDb) return;
-      var key = fbKey(fartName);
-      fbDb.ref('stinkr_v2/ratings/' + key).push({
+      var key      = fbKey(fartName);
+      var raterKey = fbKey(raterName || 'Anonymous');
+      fbDb.ref('stinkr_v2/ratings/' + key + '/' + raterKey).set({
         value: value,
         name:  raterName || 'Anonymous',
         ts:    Date.now(),
