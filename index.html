@@ -1922,9 +1922,10 @@
       var status = side === 'left' ? leftStatus : rightStatus;
       playAudio(side);
       triggerJiggle(side);
+      status.style.fontSize = '';
       status.textContent = '💨 *pfffft*';
       setTimeout(function () {
-        if (status.textContent === '💨 *pfffft*') status.textContent = '▶ Click again to replay';
+        if (status.textContent === '💨 *pfffft*') { status.textContent = '▶'; status.style.fontSize = 'clamp(1.8rem, 5vw, 2.5rem)'; }
       }, 1800);
 
       // Show rating panel on first play of each side
