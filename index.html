@@ -320,39 +320,52 @@
       letter-spacing: 0.04em;
     }
 
-    /* ─────────────────── VS divider ─────────────────── */
-    #vs-divider {
+    /* ─────────────────── Round intro overlay ─────────────────── */
+    #round-intro {
       position: fixed;
-      left: 50%;
-      top: 86px;
-      bottom: 70px;
-      transform: translateX(-50%);
-      z-index: 10;
+      inset: 0;
+      z-index: 50;
       display: flex;
-      align-items: center;
-      pointer-events: none;
-    }
-
-    #vs-circle {
-      width: clamp(48px, 8vw, 72px);
-      height: clamp(48px, 8vw, 72px);
-      border-radius: 50%;
-      background: var(--darker);
-      border: 3px solid var(--green);
-      display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-size: clamp(0.9rem, 2.5vw, 1.3rem);
-      letter-spacing: 0.05em;
-      color: var(--green);
-      box-shadow:
-        0 0 16px rgba(57,255,20,0.5),
-        0 0 40px rgba(57,255,20,0.2);
-      animation: vspulse 2.4s ease-in-out infinite;
+      pointer-events: none;
+      opacity: 0;
     }
-    @keyframes vspulse {
-      0%, 100% { box-shadow: 0 0 16px rgba(57,255,20,0.5), 0 0 40px rgba(57,255,20,0.2); }
-      50%       { box-shadow: 0 0 26px rgba(57,255,20,0.9), 0 0 60px rgba(57,255,20,0.4); }
+    #round-intro.playing {
+      animation: roundIntro 1.5s ease forwards;
+    }
+    @keyframes roundIntro {
+      0%   { opacity: 0; transform: scale(0.6); }
+      20%  { opacity: 1; transform: scale(1.05); }
+      35%  { opacity: 1; transform: scale(1); }
+      75%  { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.1); }
+    }
+    #round-intro-label {
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(1.6rem, 8vw, 3.2rem);
+      font-weight: 900;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--yellow);
+      text-shadow:
+        0 0 18px rgba(255,230,0,0.9),
+        0 0 40px rgba(255,230,0,0.5),
+        2px 2px 0 #000;
+    }
+    #round-intro-fight {
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(2.4rem, 12vw, 5rem);
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--green);
+      text-shadow:
+        0 0 24px rgba(57,255,20,0.95),
+        0 0 60px rgba(57,255,20,0.5),
+        3px 3px 0 #000;
+      margin-top: 4px;
     }
 
     /* ─────────────────── Vote bar ─────────────────── */
@@ -1015,19 +1028,6 @@
       /* ── Arena: stack panels vertically ── */
       #arena { flex-direction: column; bottom: 62px; }
 
-      /* ── VS circle: sits at the dividing midpoint ── */
-      #vs-divider {
-        top: 50%;
-        bottom: auto;
-        transform: translate(-50%, -50%);
-      }
-      #vs-circle {
-        width: 46px;
-        height: 46px;
-        font-size: 0.88rem;
-        border-width: 2px;
-      }
-
       /* ── Side panel borders: horizontal split ── */
       #left-side {
         border-right: none;
@@ -1191,9 +1191,10 @@
       </div>
     </div>
 
-    <!-- VS circle (inside #arena so rating-panel z-index:15 beats VS z-index:10) -->
-    <div id="vs-divider">
-      <div id="vs-circle">VS</div>
+    <!-- Round intro animation (fight-game style) -->
+    <div id="round-intro">
+      <div id="round-intro-label">ROUND <span id="round-intro-num">1</span></div>
+      <div id="round-intro-fight">FIGHT! 💨</div>
     </div>
 
   </div>
@@ -1874,6 +1875,17 @@
       updateChampBar();
       updateFartCounter();
       updateNewsTicker();
+
+      // Fight-game round intro animation (≤1.5 s, first round only)
+      if (winnersThisSession === 0) {
+        var introEl   = document.getElementById('round-intro');
+        var introNum  = document.getElementById('round-intro-num');
+        introNum.textContent = '1';
+        introEl.classList.remove('playing');
+        // Force reflow so removing+re-adding the class restarts the animation
+        void introEl.offsetWidth;
+        introEl.classList.add('playing');
+      }
     }
 
     /* ── Click handlers ──────────────────────────────── */
