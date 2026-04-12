@@ -1502,21 +1502,23 @@
         parts.push('<span class="ticker-live">⚡ ' + escapeHtml(tickerLiveQueue[li]) + '</span>');
       }
 
-      // Top 5 by wins
+      // Top 3 by wins
       var entries = FARTS.map(function (f) {
         var e = getLbEntry(f.name);
-        return { name: f.name, emoji: f.emoji, wins: e.wins };
+        var avg = e.timesRated > 0 ? (e.totalRating / e.timesRated).toFixed(1) : null;
+        return { name: f.name, emoji: f.emoji, wins: e.wins, avg: avg };
       }).filter(function (e) { return e.wins > 0; });
       entries.sort(function (a, b) { return b.wins - a.wins; });
 
       if (entries.length > 0) {
-        var medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
-        var top5 = entries.slice(0, 5);
+        var medals = ['🥇', '🥈', '🥉'];
+        var top3 = entries.slice(0, 3);
         parts.push(
           '<span class="ticker-top">🏆 TOP STINKS: '
-          + top5.map(function (e, i) {
+          + top3.map(function (e, i) {
+              var rating = e.avg !== null ? ' · ⭐ ' + e.avg : '';
               return medals[i] + ' ' + escapeHtml(e.emoji) + ' ' + escapeHtml(e.name)
-                     + ' — ' + e.wins + (e.wins === 1 ? ' win' : ' wins');
+                     + ' — ' + e.wins + (e.wins === 1 ? ' win' : ' wins') + rating;
             }).join('  ·  ')
           + '</span>'
         );
