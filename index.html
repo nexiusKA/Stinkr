@@ -818,6 +818,23 @@
     #lb-back:hover { background: rgba(57,255,20,0.15); transform: translateX(-2px); }
     #lb-back:active { transform: scale(0.97); transition-duration: 0.08s; }
 
+    #lb-exit {
+      display: block;
+      background: rgba(57,255,20,0.07);
+      border: 1.5px solid rgba(57,255,20,0.28);
+      color: var(--green2);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-family: Arial, sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+      margin-bottom: 14px;
+      transition: all 0.2s var(--ease-bounce);
+      touch-action: manipulation;
+    }
+    #lb-exit:hover { background: rgba(57,255,20,0.15); transform: translateX(-2px); }
+    #lb-exit:active { transform: scale(0.97); transition-duration: 0.08s; }
+
     .lb-clickable { cursor: pointer; }
     .lb-clickable:hover { background: rgba(57,255,20,0.1) !important; }
 
@@ -1103,6 +1120,7 @@
     <div id="lb-box">
       <div id="lb-title">🏆 STINK LEADERBOARD</div>
       <div id="lb-subtitle">Greatest farts · tap a row to see ratings</div>
+      <button id="lb-exit" onclick="hideLeaderboard()">← Back</button>
       <button id="lb-back" onclick="backToLeaderboard()">← Back to Board</button>
       <div id="lb-content"></div>
       <button id="lb-close" onclick="hideLeaderboard()">Close 💨</button>
@@ -1723,7 +1741,7 @@
     };
 
     /* ── Leaderboard ─────────────────────────────────── */
-    var lbSortKey = 'wins';   // 'wins' | 'rating'
+    var lbSortKey = 'rating';   // 'wins' | 'rating'
     var lbSortDir = 'desc';   // 'asc'  | 'desc'
 
     window.lbSetSort = function (key) {
@@ -1738,6 +1756,7 @@
 
     window.showLeaderboard = function () {
       document.getElementById('lb-back').style.display = 'none';
+      document.getElementById('lb-exit').style.display = 'block';
       document.getElementById('lb-subtitle').style.display = '';
       renderLeaderboard();
       document.getElementById('lb-overlay').classList.add('show');
@@ -1831,6 +1850,7 @@
 
       var entry = getLbEntry(fartName);
       document.getElementById('lb-back').style.display = 'block';
+      document.getElementById('lb-exit').style.display = 'none';
       document.getElementById('lb-subtitle').style.display = 'none';
 
       var avgText = entry.timesRated > 0
@@ -1856,6 +1876,7 @@
 
     window.backToLeaderboard = function () {
       document.getElementById('lb-back').style.display = 'none';
+      document.getElementById('lb-exit').style.display = 'block';
       document.getElementById('lb-subtitle').style.display = '';
       renderLeaderboard();
     };
