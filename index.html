@@ -732,6 +732,61 @@
     }
     #name-skip:hover { color: rgba(255,255,255,0.55); }
 
+    /* ─────────────────── Session name field ─────────────────── */
+    #session-label {
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.78rem, 2vw, 0.92rem);
+      color: rgba(255,255,255,0.55);
+      margin-top: 14px;
+      margin-bottom: 8px;
+      letter-spacing: 0.04em;
+    }
+    #session-input {
+      width: 100%;
+      padding: 10px 16px;
+      background: rgba(57,255,20,0.04);
+      border: 1.5px solid rgba(57,255,20,0.3);
+      border-radius: 10px;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 14px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+    #session-input::placeholder { color: rgba(255,255,255,0.22); }
+    #session-input:focus {
+      border-color: rgba(57,255,20,0.7);
+      box-shadow: 0 0 14px rgba(57,255,20,0.2);
+    }
+
+    /* ─────────────────── Session saved toast ─────────────────── */
+    #session-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(0,0,0,0.92);
+      border: 1.5px solid rgba(57,255,20,0.6);
+      color: var(--green);
+      font-family: Arial, sans-serif;
+      font-size: 0.88rem;
+      padding: 10px 24px;
+      border-radius: 24px;
+      z-index: 200;
+      opacity: 0;
+      transition: opacity 0.35s, transform 0.35s;
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.55), 0 0 14px rgba(57,255,20,0.25);
+    }
+    #session-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
     /* ─────────────────── Firebase auth section ─────────────────── */
     #fb-auth-section {
       margin-top: 18px;
@@ -1014,6 +1069,8 @@
       <div id="name-tagline">The Ultimate Fart Battle</div>
       <div id="name-label">What's your stink name?</div>
       <input type="text" id="name-input" placeholder="Enter your name…" maxlength="20" autocomplete="off" />
+      <div id="session-label">Session name (optional):</div>
+      <input type="text" id="session-input" placeholder="E.g. Friday Night Stinks…" maxlength="30" autocomplete="off" />
       <button id="name-btn" onclick="submitName()">Enter the Stink Zone 💨</button>
       <button id="name-skip" onclick="submitName(true)">Skip (anonymous)</button>
       <div id="fb-auth-section">
@@ -1029,6 +1086,9 @@
       </div>
     </div>
   </div>
+
+  <!-- Session saved toast -->
+  <div id="session-toast"></div>
 
   <canvas id="particles"></canvas>
 
@@ -1266,13 +1326,14 @@
      * Until real values are provided the game works fully in localStorage-only mode.
      */
     var FIREBASE_CONFIG = {
-      apiKey:            'YOUR_API_KEY',
-      authDomain:        'YOUR_PROJECT_ID.firebaseapp.com',
-      databaseURL:       'https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com',
-      projectId:         'YOUR_PROJECT_ID',
-      storageBucket:     'YOUR_PROJECT_ID.appspot.com',
-      messagingSenderId: 'YOUR_SENDER_ID',
-      appId:             'YOUR_APP_ID',
+      apiKey:            'AIzaSyDzt9C2nkn9sdMTji_fhcUYw274s1pYIeA',
+      authDomain:        'stinkr-1a347.firebaseapp.com',
+      databaseURL:       'https://stinkr-1a347-default-rtdb.europe-west1.firebasedatabase.app',
+      projectId:         'stinkr-1a347',
+      storageBucket:     'stinkr-1a347.firebasestorage.app',
+      messagingSenderId: '996766984580',
+      appId:             '1:996766984580:web:1556f72fdd1046ad17d5d1',
+      measurementId:     'G-B7NYGCTS3F',
     };
 
     var fbDb             = null;
@@ -1382,6 +1443,36 @@
       });
     }
 
+    var sessionName        = '';
+    var pendingSessionName = null;
+
+    function fbSaveSession(name, extra) {
+      if (!fbDb || !name) return;
+      var data = {
+        name: name,
+        ts:   Date.now(),
+      };
+      if (extra) {
+        if (extra.status)   data.status   = extra.status;
+        if (extra.champion) data.champion = extra.champion;
+      }
+      fbDb.ref('sessions').push(data)
+        .then(function () {
+          showSessionToast('✓ Session "' + name + '" saved!');
+        })
+        .catch(function (e) {
+          console.warn('Session save error:', e);
+        });
+    }
+
+    function showSessionToast(msg) {
+      var el = document.getElementById('session-toast');
+      if (!el) return;
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(function () { el.classList.remove('show'); }, 3500);
+    }
+
     function initFirebase() {
       try {
         if (typeof firebase === 'undefined') return;
@@ -1396,6 +1487,10 @@
             fbUserId = user.uid;
             fbListenGlobal();
             fbSetSyncStatus(true);
+            if (pendingSessionName) {
+              fbSaveSession(pendingSessionName);
+              pendingSessionName = null;
+            }
           } else {
             fbUserId = null;
             fbSetSyncStatus(false);
@@ -1709,6 +1804,14 @@
 
       document.getElementById('next-btn').textContent = 'Play Again 💨';
       overlay.classList.add('show');
+
+      // Save session completion to Firebase (only if a session name was set)
+      if (sessionName && fbDb) {
+        fbSaveSession(sessionName, {
+          status:   'completed',
+          champion: champion ? champion.fart.name : null,
+        });
+      }
     }
 
     /* ── Next round ──────────────────────────────────── */
@@ -1719,6 +1822,7 @@
       winnersThisSession = 0;
       ratedThisSession = {};
       champion = null;
+      sessionName = '';
       updateFartCounter();
       setupRound();
     };
@@ -1843,6 +1947,9 @@
 
     /* ── Name entry ──────────────────────────────────── */
     window.submitName = function (skip) {
+      var sessionInput = document.getElementById('session-input');
+      sessionName = sessionInput ? sessionInput.value.trim() : '';
+
       if (!skip) {
         var input = document.getElementById('name-input');
         var val = input ? input.value.trim() : '';
@@ -1852,6 +1959,16 @@
       }
       if (playerName !== 'Anonymous') saveStorage('stinkr_name', playerName);
       document.getElementById('name-overlay').classList.remove('show');
+
+      // Save session name to Firebase
+      if (sessionName) {
+        if (fbDb && fbUserId) {
+          fbSaveSession(sessionName);
+        } else if (fbDb) {
+          pendingSessionName = sessionName; // saved after anonymous auth completes
+        }
+      }
+
       // If Firebase is configured but no user signed in yet, use anonymous auth
       if (fbAuth && !fbUserId) {
         fbAuth.signInAnonymously().catch(function (e) {
