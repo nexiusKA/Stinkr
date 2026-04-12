@@ -620,12 +620,128 @@
     #lb-close:active { transform: scale(0.97); transition-duration: 0.08s; }
 
     /* ─────────────────── Responsive tweaks ─────────────────── */
-    @media (max-width: 480px) {
-      #header h1 { font-size: 1.1rem; }
-      .fart-blob  { font-size: 4.5rem; }
-      #winner-box { padding: 24px 28px; }
-      #lb-box { padding: 20px 16px 24px; }
-      .lb-row { grid-template-columns: 26px 1fr 52px 58px; }
+
+    /* ── Short vote labels (hidden by default, shown on mobile) ── */
+    .vote-short { display: none; }
+
+    /* ── Mobile: comprehensive overhaul ── */
+    @media (max-width: 600px) {
+
+      /* Prevent tap flash & improve touch responsiveness */
+      * { -webkit-tap-highlight-color: transparent; }
+      button { touch-action: manipulation; }
+
+      /* ── Header ── */
+      #header {
+        padding: 8px 12px;
+        gap: 8px;
+      }
+      #header h1 { font-size: 1.05rem; letter-spacing: 0.08em; }
+      #champion-bar { font-size: 0.6rem; }
+      #leaderboard-btn {
+        padding: 6px 10px;
+        font-size: 0.63rem;
+        border-radius: 8px;
+        letter-spacing: 0.04em;
+      }
+
+      /* ── Fart counter ── */
+      #fart-counter { font-size: 0.6rem; padding: 2px 10px; }
+
+      /* ── Arena: stack panels vertically ── */
+      #arena { flex-direction: column; bottom: 62px; }
+
+      /* ── VS circle: sits at the dividing midpoint ── */
+      #vs-divider {
+        top: 50%;
+        bottom: auto;
+        transform: translate(-50%, -50%);
+      }
+      #vs-circle {
+        width: 46px;
+        height: 46px;
+        font-size: 0.88rem;
+        border-width: 2px;
+      }
+
+      /* ── Side panel borders: horizontal split ── */
+      #left-side {
+        border-right: none;
+        border-bottom: 2px solid rgba(57,255,20,0.22);
+      }
+      #right-side {
+        border-left: none;
+        border-top: 2px solid rgba(200,134,10,0.22);
+      }
+
+      /* ── Fart content ── */
+      .fart-blob { font-size: 3.6rem; margin-bottom: 6px; }
+      .fart-name { font-size: 1rem; letter-spacing: 0.05em; }
+      .fart-subtitle { font-size: 0.67rem; margin-top: 4px; }
+      .play-status { font-size: 0.7rem; margin-top: 6px; min-height: 1.1em; }
+
+      /* ── Win badge ── */
+      .win-badge { font-size: 0.66rem; padding: 3px 9px; top: 10px; }
+      #left-side  .win-badge { left: 10px; }
+      #right-side .win-badge { right: 10px; }
+
+      /* ── Rating panel: compact & touch-friendly ── */
+      .rating-panel { padding: 6px 8px 10px; }
+      .rating-label { font-size: 0.6rem; margin-bottom: 4px; }
+      .rating-stars { gap: 3px; flex-wrap: wrap; justify-content: center; }
+      .star-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.7rem;
+        border-radius: 6px;
+      }
+      .rating-avg { font-size: 0.58rem; margin-top: 4px; }
+
+      /* ── Vote bar ── */
+      #vote-bar { height: 62px; padding: 0 10px; gap: 8px; }
+      .vote-btn {
+        height: 42px;
+        font-size: 0.66rem;
+        border-radius: 10px;
+        letter-spacing: 0.03em;
+        gap: 4px;
+      }
+      .vote-sep { font-size: 0.88rem; }
+
+      /* Short label swap */
+      .vote-full  { display: none; }
+      .vote-short { display: inline; }
+
+      /* ── Winner overlay ── */
+      #winner-box { padding: 22px 18px; border-radius: 18px; }
+      #winner-emoji { font-size: 3.8rem; }
+      #winner-label { font-size: 1rem; }
+      #winner-name  { font-size: 1.3rem; }
+      #winner-wins  { font-size: 0.82rem; margin-top: 8px; }
+      #next-btn { padding: 11px 28px; font-size: 0.88rem; margin-top: 16px; }
+
+      /* ── Leaderboard ── */
+      #lb-box { padding: 16px 12px 20px; border-radius: 18px; }
+      #lb-title { font-size: 1.15rem; letter-spacing: 0.07em; }
+      #lb-subtitle { font-size: 0.62rem; margin-bottom: 14px; }
+      .lb-row {
+        grid-template-columns: 26px 1fr 48px 56px;
+        gap: 5px;
+        padding: 8px 10px;
+      }
+      .lb-name   { font-size: 0.72rem; }
+      .lb-wins   { font-size: 0.7rem; }
+      .lb-rating { font-size: 0.7rem; }
+      #lb-close { padding: 10px; font-size: 0.82rem; border-radius: 8px; }
+    }
+
+    /* ── Very small screens (≤360px) ── */
+    @media (max-width: 360px) {
+      #header h1 { font-size: 0.95rem; }
+      .fart-blob { font-size: 3rem; }
+      .fart-name { font-size: 0.9rem; }
+      .star-btn { width: 26px; height: 26px; font-size: 0.62rem; }
+      .vote-btn { font-size: 0.6rem; }
     }
   </style>
 </head>
@@ -685,9 +801,15 @@
 
   <!-- Vote bar -->
   <div id="vote-bar">
-    <button class="vote-btn" id="vote-left"  onclick="castVote('left')">👑 THIS ONE STINKS BETTER</button>
+    <button class="vote-btn" id="vote-left"  onclick="castVote('left')">
+      <span class="vote-full">👑 THIS ONE STINKS BETTER</span>
+      <span class="vote-short">👑 LEFT WINS</span>
+    </button>
     <span class="vote-sep">💨</span>
-    <button class="vote-btn" id="vote-right" onclick="castVote('right')">THIS ONE STINKS BETTER 👑</button>
+    <button class="vote-btn" id="vote-right" onclick="castVote('right')">
+      <span class="vote-full">THIS ONE STINKS BETTER 👑</span>
+      <span class="vote-short">RIGHT WINS 👑</span>
+    </button>
   </div>
 
   <!-- Winner overlay -->
