@@ -102,7 +102,7 @@
     /* ─────────────────── Fart counter ─────────────────── */
     #fart-counter {
       position: fixed;
-      top: 56px;
+      top: 86px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 15;
@@ -136,7 +136,7 @@
     #arena {
       position: fixed;
       inset: 0;
-      top: 56px;
+      top: 86px;
       bottom: 70px;
       display: flex;
     }
@@ -324,7 +324,7 @@
     #vs-divider {
       position: fixed;
       left: 50%;
-      top: 56px;
+      top: 86px;
       bottom: 70px;
       transform: translateX(-50%);
       z-index: 10;
@@ -789,6 +789,62 @@
       transform: translateX(-50%) translateY(0);
     }
 
+    /* ─────────────────── News ticker ─────────────────── */
+    #news-ticker {
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      height: 30px;
+      z-index: 18;
+      background: rgba(0,0,0,0.96);
+      border-bottom: 1.5px solid rgba(57,255,20,0.28);
+      display: flex;
+      align-items: stretch;
+      overflow: hidden;
+    }
+    #news-ticker-label {
+      flex-shrink: 0;
+      background: var(--green);
+      color: #000;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      box-shadow: 4px 0 12px rgba(57,255,20,0.4);
+      z-index: 1;
+    }
+    #news-ticker-scroll {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    #news-ticker-content {
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      font-family: Arial, sans-serif;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.82);
+      letter-spacing: 0.03em;
+      padding: 0 12px;
+      animation: ticker-scroll 40s linear infinite;
+      will-change: transform;
+    }
+    @keyframes ticker-scroll {
+      from { transform: translateX(100vw); }
+      to   { transform: translateX(-100%); }
+    }
+    .ticker-live  { color: var(--green); font-weight: bold; }
+    .ticker-top   { color: var(--yellow); }
+    .ticker-trend { color: #ff9900; }
+    .ticker-sep   { color: rgba(255,255,255,0.25); padding: 0 10px; }
+
     #sync-status {
       font-family: Arial, sans-serif;
       font-size: 0.68rem;
@@ -893,6 +949,11 @@
         -webkit-tap-highlight-color: transparent;
       }
       button { touch-action: manipulation; }
+
+      /* ── News ticker on mobile ── */
+      #news-ticker { height: 26px; }
+      #news-ticker-label { font-size: 0.55rem; padding: 0 8px; }
+      #news-ticker-content { font-size: 0.62rem; }
 
       /* ── Header ── */
       #header {
@@ -1045,6 +1106,14 @@
     <h1>💨 STINKR</h1>
     <div id="champion-bar">Loading the stench…</div>
     <button id="leaderboard-btn" onclick="showLeaderboard()">🏆 Board</button>
+  </div>
+
+  <!-- News ticker -->
+  <div id="news-ticker">
+    <div id="news-ticker-label">📺 STINK NEWS</div>
+    <div id="news-ticker-scroll">
+      <div id="news-ticker-content">💨 Loading stink data…</div>
+    </div>
   </div>
 
   <!-- Fart counter -->
@@ -1326,6 +1395,7 @@
         if (document.getElementById('lb-overlay').classList.contains('show')) {
           renderLeaderboard();
         }
+        updateNewsTicker();
       });
 
       // Listen to global ratings
@@ -1360,6 +1430,7 @@
         // Refresh rating averages for currently displayed farts
         if (leftFart)  updateRatingAvg('left',  leftFart.name);
         if (rightFart) updateRatingAvg('right', rightFart.name);
+        updateNewsTicker();
       });
     }
 
@@ -1409,6 +1480,74 @@
       el.textContent = msg;
       el.classList.add('show');
       setTimeout(function () { el.classList.remove('show'); }, 3500);
+    }
+
+    /* ── News Ticker ──────────────────────────────────── */
+    var tickerLiveQueue = [];
+
+    function pushTickerEvent(msg) {
+      tickerLiveQueue.unshift(msg);
+      if (tickerLiveQueue.length > 5) tickerLiveQueue.length = 5;
+      updateNewsTicker();
+    }
+
+    function updateNewsTicker() {
+      var el = document.getElementById('news-ticker-content');
+      if (!el) return;
+
+      var parts = [];
+
+      // Live events (up to 5 most recent)
+      for (var li = 0; li < tickerLiveQueue.length; li++) {
+        parts.push('<span class="ticker-live">⚡ ' + escapeHtml(tickerLiveQueue[li]) + '</span>');
+      }
+
+      // Top 5 by wins
+      var entries = FARTS.map(function (f) {
+        var e = getLbEntry(f.name);
+        return { name: f.name, emoji: f.emoji, wins: e.wins };
+      }).filter(function (e) { return e.wins > 0; });
+      entries.sort(function (a, b) { return b.wins - a.wins; });
+
+      if (entries.length > 0) {
+        var medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
+        var top5 = entries.slice(0, 5);
+        parts.push(
+          '<span class="ticker-top">🏆 TOP STINKS: '
+          + top5.map(function (e, i) {
+              return medals[i] + ' ' + escapeHtml(e.emoji) + ' ' + escapeHtml(e.name)
+                     + ' — ' + e.wins + (e.wins === 1 ? ' win' : ' wins');
+            }).join('  ·  ')
+          + '</span>'
+        );
+      }
+
+      // Trending: current session champion or all-time leader
+      if (champion && champion.wins > 0) {
+        parts.push('<span class="ticker-trend">🔥 TRENDING: ' + escapeHtml(champion.fart.emoji) + ' '
+          + escapeHtml(champion.fart.name) + ' — ' + champion.wins
+          + (champion.wins === 1 ? ' win' : ' wins') + ' this session</span>');
+      } else if (entries.length > 0) {
+        var leader = entries[0];
+        parts.push('<span class="ticker-trend">🔥 ALL-TIME LEADER: ' + escapeHtml(leader.emoji) + ' '
+          + escapeHtml(leader.name) + ' — ' + leader.wins
+          + (leader.wins === 1 ? ' win' : ' wins') + '</span>');
+      }
+
+      if (parts.length === 0) {
+        parts.push('💨 Cast your first vote to crown the stinkiest fart!');
+      }
+
+      var sep = '<span class="ticker-sep"> ✦ </span>';
+      el.innerHTML = parts.join(sep);
+
+      // Scale animation speed to content length:
+      // 0.13s per character gives comfortable reading pace; clamped to
+      // 18s minimum (very short messages) and 70s maximum (very long messages).
+      var dur = Math.max(18, Math.min(70, el.textContent.length * 0.13));
+      el.style.animation = 'none';
+      void el.offsetWidth; // force reflow to restart animation
+      el.style.animation = 'ticker-scroll ' + dur + 's linear infinite';
     }
 
     function initFirebase() {
@@ -1561,6 +1700,7 @@
       }
       saveLb();
       fbSaveRating(fartName, rating, playerName || 'Anonymous');
+      pushTickerEvent((playerName || 'Someone') + ' rated ' + fartName + ' ' + rating + '/10!');
 
       var container = side === 'left' ? leftStars : rightStars;
       var btns = container.querySelectorAll('.star-btn');
@@ -1646,6 +1786,7 @@
 
       updateChampBar();
       updateFartCounter();
+      updateNewsTicker();
     }
 
     /* ── Click handlers ──────────────────────────────── */
@@ -1686,6 +1827,7 @@
       getLbEntry(winner.name).wins += 1;
       saveLb();
       fbSaveWin(winner.name);
+      pushTickerEvent((playerName || 'Someone') + ' voted for ' + winner.name + '!');
 
       winnersThisSession++;
       updateFartCounter();
