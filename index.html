@@ -1502,7 +1502,7 @@
         parts.push('<span class="ticker-live">⚡ ' + escapeHtml(tickerLiveQueue[li]) + '</span>');
       }
 
-      var medals = ['🥇', '🥈', '🥉'];
+      var medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣'];
 
       // Top 3 by rating (must have at least one rating)
       var ratedEntries = FARTS.map(function (f) {
@@ -1513,12 +1513,12 @@
       ratedEntries.sort(function (a, b) { return b.avg - a.avg; });
 
       if (ratedEntries.length > 0) {
-        var top3Rated = ratedEntries.slice(0, 3);
+        var top5Rated = ratedEntries.slice(0, 5);
         parts.push(
           '<span class="ticker-top">⭐ TOP RATED: '
-          + top3Rated.map(function (e, i) {
+          + top5Rated.map(function (e, i) {
               return medals[i] + ' ' + escapeHtml(e.emoji) + ' ' + escapeHtml(e.name)
-                     + ' — ' + e.avg.toFixed(1) + '/10';
+                     + ' — ' + e.avg.toFixed(1) + '⭐';
             }).join('  ·  ')
           + '</span>'
         );
@@ -1533,10 +1533,10 @@
       entries.sort(function (a, b) { return b.wins - a.wins; });
 
       if (entries.length > 0) {
-        var top3 = entries.slice(0, 3);
+        var top5 = entries.slice(0, 5);
         parts.push(
           '<span class="ticker-top">🏆 TOP WINS: '
-          + top3.map(function (e, i) {
+          + top5.map(function (e, i) {
               return medals[i] + ' ' + escapeHtml(e.emoji) + ' ' + escapeHtml(e.name)
                      + ' — ' + e.wins + (e.wins === 1 ? ' win' : ' wins');
             }).join('  ·  ')
