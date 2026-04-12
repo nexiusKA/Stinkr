@@ -732,6 +732,78 @@
     }
     #name-skip:hover { color: rgba(255,255,255,0.55); }
 
+    /* ─────────────────── Firebase auth section ─────────────────── */
+    #fb-auth-section {
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(57,255,20,0.15);
+    }
+    #fb-auth-divider {
+      font-family: Arial, sans-serif;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.3);
+      margin-bottom: 12px;
+      letter-spacing: 0.04em;
+    }
+    .fb-input {
+      width: 100%;
+      padding: 10px 14px;
+      background: rgba(57,255,20,0.04);
+      border: 1.5px solid rgba(57,255,20,0.25);
+      border-radius: 10px;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      font-size: 0.88rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+    .fb-input::placeholder { color: rgba(255,255,255,0.22); }
+    .fb-input:focus {
+      border-color: rgba(57,255,20,0.6);
+      box-shadow: 0 0 12px rgba(57,255,20,0.15);
+    }
+    #fb-auth-btns {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .fb-btn {
+      flex: 1;
+      padding: 9px 10px;
+      background: rgba(57,255,20,0.08);
+      border: 1.5px solid rgba(57,255,20,0.3);
+      color: var(--green2);
+      border-radius: 9px;
+      font-family: Arial, sans-serif;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.22s var(--ease-bounce);
+      letter-spacing: 0.04em;
+      touch-action: manipulation;
+    }
+    .fb-btn:hover { background: rgba(57,255,20,0.18); transform: scale(1.03); }
+    .fb-btn:active { transform: scale(0.97); transition-duration: 0.08s; }
+    #fb-auth-msg {
+      font-family: Arial, sans-serif;
+      font-size: 0.72rem;
+      min-height: 1.1em;
+      margin-top: 8px;
+      color: rgba(255,255,255,0.45);
+      text-align: center;
+    }
+    #sync-status {
+      font-family: Arial, sans-serif;
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.35);
+      text-align: center;
+      margin-top: 10px;
+      letter-spacing: 0.03em;
+      transition: color 0.4s;
+    }
+    #sync-status.live { color: #39ff14; }
+
     /* ─────────────────── Leaderboard detail view ─────────────────── */
     #lb-back {
       display: none;
@@ -944,6 +1016,17 @@
       <input type="text" id="name-input" placeholder="Enter your name…" maxlength="20" autocomplete="off" />
       <button id="name-btn" onclick="submitName()">Enter the Stink Zone 💨</button>
       <button id="name-skip" onclick="submitName(true)">Skip (anonymous)</button>
+      <div id="fb-auth-section">
+        <div id="fb-auth-divider">— optional: sign in to sync ratings across devices —</div>
+        <input type="email" id="fb-email" class="fb-input" placeholder="Email (optional)" autocomplete="email" />
+        <input type="password" id="fb-password" class="fb-input" placeholder="Password" autocomplete="current-password" />
+        <div id="fb-auth-btns">
+          <button class="fb-btn" onclick="fbSignIn()">Sign In</button>
+          <button class="fb-btn" onclick="fbRegister()">Register</button>
+        </div>
+        <div id="fb-auth-msg"></div>
+        <div id="sync-status">📱 Local only</div>
+      </div>
     </div>
   </div>
 
@@ -1034,6 +1117,11 @@
       <button id="lb-close" onclick="hideLeaderboard()">Close 💨</button>
     </div>
   </div>
+
+  <!-- Firebase SDK (compat v9 – replace config below with your own project values) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
   (function () {
@@ -1168,6 +1256,179 @@
     }
     function saveLb() { saveStorage('stinkr_lb', lbData); }
 
+    /* ── Firebase Integration ─────────────────────────────── */
+    /*
+     * Replace the placeholder values below with your own Firebase project config.
+     * 1. Go to https://console.firebase.google.com and create a project.
+     * 2. Enable Realtime Database (start in test mode).
+     * 3. Enable Authentication → Email/Password (and optionally Anonymous).
+     * 4. Copy your web app config here.
+     * Until real values are provided the game works fully in localStorage-only mode.
+     */
+    var FIREBASE_CONFIG = {
+      apiKey:            'YOUR_API_KEY',
+      authDomain:        'YOUR_PROJECT_ID.firebaseapp.com',
+      databaseURL:       'https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com',
+      projectId:         'YOUR_PROJECT_ID',
+      storageBucket:     'YOUR_PROJECT_ID.appspot.com',
+      messagingSenderId: 'YOUR_SENDER_ID',
+      appId:             'YOUR_APP_ID',
+    };
+
+    var fbDb             = null;
+    var fbAuth           = null;
+    var fbUserId         = null;
+    var fbListenersSet   = false;
+
+    function fbKey(name) {
+      // Firebase paths cannot contain . # $ [ ] /
+      return name.replace(/[.#$[\]/]/g, '_');
+    }
+
+    function fbSetSyncStatus(live) {
+      var el = document.getElementById('sync-status');
+      if (!el) return;
+      if (live) {
+        el.textContent = '🌍 Live — ratings synced globally';
+        el.classList.add('live');
+      } else {
+        el.textContent = '📱 Local only';
+        el.classList.remove('live');
+      }
+    }
+
+    function fbSetAuthMsg(msg, isError) {
+      var el = document.getElementById('fb-auth-msg');
+      if (!el) return;
+      el.textContent = msg;
+      el.style.color = isError ? '#ff6b6b' : 'rgba(57,255,20,0.85)';
+    }
+
+    function fbListenGlobal() {
+      if (!fbDb || fbListenersSet) return;
+      fbListenersSet = true;
+
+      // Listen to global wins
+      fbDb.ref('stinkr/wins').on('value', function (snap) {
+        var wins = snap.val() || {};
+        var keys = Object.keys(wins);
+        for (var i = 0; i < keys.length; i++) {
+          var k = keys[i];
+          // Find the matching fart by its sanitised key
+          for (var j = 0; j < FARTS.length; j++) {
+            if (fbKey(FARTS[j].name) === k) {
+              getLbEntry(FARTS[j].name).wins = wins[k];
+              break;
+            }
+          }
+        }
+        saveLb();
+        if (document.getElementById('lb-overlay').classList.contains('show')) {
+          renderLeaderboard();
+        }
+      });
+
+      // Listen to global ratings
+      fbDb.ref('stinkr/ratings').on('value', function (snap) {
+        var allRatings = snap.val() || {};
+        var fartKeys   = Object.keys(allRatings);
+        for (var i = 0; i < fartKeys.length; i++) {
+          var fk       = fartKeys[i];
+          var rawMap   = allRatings[fk];
+          var entryName = null;
+          for (var j = 0; j < FARTS.length; j++) {
+            if (fbKey(FARTS[j].name) === fk) { entryName = FARTS[j].name; break; }
+          }
+          if (!entryName) continue;
+
+          var entry      = getLbEntry(entryName);
+          entry.totalRating = 0;
+          entry.timesRated  = 0;
+          entry.ratings     = [];
+          var pushKeys = Object.keys(rawMap);
+          for (var p = 0; p < pushKeys.length; p++) {
+            var rating = rawMap[pushKeys[p]];
+            entry.totalRating += rating.value;
+            entry.timesRated  += 1;
+            entry.ratings.push({ name: rating.name, value: rating.value });
+          }
+        }
+        saveLb();
+        if (document.getElementById('lb-overlay').classList.contains('show')) {
+          renderLeaderboard();
+        }
+        // Refresh rating averages for currently displayed farts
+        if (leftFart)  updateRatingAvg('left',  leftFart.name);
+        if (rightFart) updateRatingAvg('right', rightFart.name);
+      });
+    }
+
+    function fbSaveWin(fartName) {
+      if (!fbDb || !fbUserId) return;
+      var key = fbKey(fartName);
+      fbDb.ref('stinkr/wins/' + key).transaction(function (val) {
+        return (val || 0) + 1;
+      });
+    }
+
+    function fbSaveRating(fartName, value, raterName) {
+      if (!fbDb || !fbUserId) return;
+      var key = fbKey(fartName);
+      fbDb.ref('stinkr/ratings/' + key).push({
+        value:  value,
+        name:   raterName || 'Anonymous',
+        userId: fbUserId,
+        ts:     Date.now(),
+      });
+    }
+
+    function initFirebase() {
+      try {
+        if (typeof firebase === 'undefined') return;
+        if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') return; // not yet configured
+
+        firebase.initializeApp(FIREBASE_CONFIG);
+        fbDb   = firebase.database();
+        fbAuth = firebase.auth();
+
+        fbAuth.onAuthStateChanged(function (user) {
+          if (user) {
+            fbUserId = user.uid;
+            fbListenGlobal();
+            fbSetSyncStatus(true);
+          } else {
+            fbUserId = null;
+            fbSetSyncStatus(false);
+          }
+        });
+      } catch (e) {
+        console.warn('Firebase init error:', e);
+      }
+    }
+
+    // Called from the name overlay auth buttons
+    window.fbSignIn = function () {
+      if (!fbAuth) { fbSetAuthMsg('Firebase not configured.', true); return; }
+      var email = (document.getElementById('fb-email').value || '').trim();
+      var pass  = (document.getElementById('fb-password').value || '');
+      if (!email || !pass) { fbSetAuthMsg('Enter email and password.', true); return; }
+      fbSetAuthMsg('Signing in…');
+      fbAuth.signInWithEmailAndPassword(email, pass)
+        .then(function () { fbSetAuthMsg('✓ Signed in! Syncing ratings…'); })
+        .catch(function (e) { fbSetAuthMsg(e.message, true); });
+    };
+
+    window.fbRegister = function () {
+      if (!fbAuth) { fbSetAuthMsg('Firebase not configured.', true); return; }
+      var email = (document.getElementById('fb-email').value || '').trim();
+      var pass  = (document.getElementById('fb-password').value || '');
+      if (!email || !pass) { fbSetAuthMsg('Enter email and password.', true); return; }
+      fbSetAuthMsg('Creating account…');
+      fbAuth.createUserWithEmailAndPassword(email, pass)
+        .then(function () { fbSetAuthMsg('✓ Account created! Ratings will sync globally.'); })
+        .catch(function (e) { fbSetAuthMsg(e.message, true); });
+    };
+
     /* ── State ─────────────────────────────────────────── */
     var champion = null;   // { fart, wins } or null first round
     var leftFart  = null;
@@ -1289,6 +1550,7 @@
       entry.timesRated  += 1;
       entry.ratings.push({ name: playerName || 'Anonymous', value: rating });
       saveLb();
+      fbSaveRating(fartName, rating, playerName || 'Anonymous');
 
       var container = side === 'left' ? leftStars : rightStars;
       var btns = container.querySelectorAll('.star-btn');
@@ -1415,6 +1677,7 @@
       // Persist win to leaderboard
       getLbEntry(winner.name).wins += 1;
       saveLb();
+      fbSaveWin(winner.name);
 
       winnersThisSession++;
       updateFartCounter();
@@ -1504,13 +1767,17 @@
         return b.wins !== a.wins ? b.wins - a.wins : b.avgRating - a.avgRating;
       });
 
+      var sourceBadge = fbUserId
+        ? '<div style="font-family:Arial,sans-serif;font-size:0.68rem;color:#39ff14;text-align:center;margin-bottom:10px;opacity:0.85;">🌍 Global ratings from all players</div>'
+        : '<div style="font-family:Arial,sans-serif;font-size:0.68rem;color:rgba(255,255,255,0.3);text-align:center;margin-bottom:10px;">📱 Local ratings only · sign in to see global board</div>';
+
       var hasAny = entries.some(function (e) { return e.wins > 0 || e.timesRated > 0; });
       if (!hasAny) {
-        content.innerHTML = '<div class="lb-empty">💨 No rounds played yet!<br>Start sniffing to fill the board.</div>';
+        content.innerHTML = sourceBadge + '<div class="lb-empty">💨 No rounds played yet!<br>Start sniffing to fill the board.</div>';
         return;
       }
 
-      var html = '<div class="lb-row lb-header">'
+      var html = sourceBadge + '<div class="lb-row lb-header">'
         + '<div class="lb-rank">#</div>'
         + '<div class="lb-name">Fart</div>'
         + '<div class="lb-wins">Wins</div>'
@@ -1585,6 +1852,12 @@
       }
       if (playerName !== 'Anonymous') saveStorage('stinkr_name', playerName);
       document.getElementById('name-overlay').classList.remove('show');
+      // If Firebase is configured but no user signed in yet, use anonymous auth
+      if (fbAuth && !fbUserId) {
+        fbAuth.signInAnonymously().catch(function (e) {
+          console.warn('Anonymous sign-in failed:', e);
+        });
+      }
       setupRound();
     };
 
@@ -1653,6 +1926,7 @@
     /* ── Boot ────────────────────────────────────────── */
     // Pre-fill saved name and show welcome overlay
     (function () {
+      initFirebase();
       var input = document.getElementById('name-input');
       if (input && playerName) input.value = playerName;
       // Submit on Enter key
