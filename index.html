@@ -1235,14 +1235,14 @@
     }
 
     // lbData: { [fartName]: { wins: N, totalRating: N, timesRated: N } }
-    var lbData = loadStorage('stinkr_lb_v2', {});
+    var lbData = loadStorage('stinkr_lb_v3', {});
 
     function getLbEntry(name) {
       if (!lbData[name]) lbData[name] = { wins: 0, totalRating: 0, timesRated: 0, ratings: [] };
       if (!lbData[name].ratings) lbData[name].ratings = []; // backward-compat
       return lbData[name];
     }
-    function saveLb() { saveStorage('stinkr_lb_v2', lbData); }
+    function saveLb() { saveStorage('stinkr_lb_v3', lbData); }
 
     /* ── Firebase Integration ─────────────────────────────── */
     /*
@@ -1289,7 +1289,7 @@
       fbListenersSet = true;
 
       // Listen to global wins
-      fbDb.ref('stinkr_v2/wins').on('value', function (snap) {
+      fbDb.ref('stinkr_v3/wins').on('value', function (snap) {
         var wins = snap.val() || {};
         var keys = Object.keys(wins);
         for (var i = 0; i < keys.length; i++) {
@@ -1309,7 +1309,7 @@
       });
 
       // Listen to global ratings
-      fbDb.ref('stinkr_v2/ratings').on('value', function (snap) {
+      fbDb.ref('stinkr_v3/ratings').on('value', function (snap) {
         var allRatings = snap.val() || {};
         var fartKeys   = Object.keys(allRatings);
         for (var i = 0; i < fartKeys.length; i++) {
@@ -1346,7 +1346,7 @@
     function fbSaveWin(fartName) {
       if (!fbDb) return;
       var key = fbKey(fartName);
-      fbDb.ref('stinkr_v2/wins/' + key).transaction(function (val) {
+      fbDb.ref('stinkr_v3/wins/' + key).transaction(function (val) {
         return (val || 0) + 1;
       });
     }
@@ -1355,7 +1355,7 @@
       if (!fbDb) return;
       var key      = fbKey(fartName);
       var raterKey = fbKey(raterName || 'Anonymous');
-      fbDb.ref('stinkr_v2/ratings/' + key + '/' + raterKey).set({
+      fbDb.ref('stinkr_v3/ratings/' + key + '/' + raterKey).set({
         value: value,
         name:  raterName || 'Anonymous',
         ts:    Date.now(),
