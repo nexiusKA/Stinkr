@@ -621,6 +621,182 @@
 
     /* ─────────────────── Responsive tweaks ─────────────────── */
 
+    /* ─────────────────── Name-entry overlay ─────────────────── */
+    #name-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 400;
+      background: rgba(0,0,0,0.97);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      backdrop-filter: blur(8px);
+      animation: fadein 0.3s var(--ease-smooth);
+    }
+    #name-overlay.show { display: flex; }
+
+    #name-box {
+      background: linear-gradient(160deg, rgba(5,22,2,0.98), rgba(2,10,1,0.98));
+      border: 3px solid var(--green);
+      border-radius: 24px;
+      padding: 36px 44px;
+      text-align: center;
+      width: min(420px, 90vw);
+      box-shadow:
+        0 0 60px rgba(57,255,20,0.45),
+        0 0 120px rgba(57,255,20,0.1),
+        inset 0 1px 0 rgba(57,255,20,0.15);
+      animation: winpop 0.45s var(--ease-bounce);
+    }
+
+    #name-logo {
+      font-size: 4.5rem;
+      line-height: 1;
+      margin-bottom: 8px;
+      filter: drop-shadow(0 0 22px rgba(57,255,20,0.65));
+    }
+    #name-title {
+      font-size: clamp(1.4rem, 5vw, 2rem);
+      letter-spacing: 0.12em;
+      background: linear-gradient(90deg, var(--green), var(--yellow), var(--brown));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 8px rgba(57,255,20,0.4));
+      margin-bottom: 4px;
+    }
+    #name-tagline {
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.72rem, 2vw, 0.88rem);
+      color: rgba(255,255,255,0.4);
+      font-weight: normal;
+      margin-bottom: 26px;
+    }
+    #name-label {
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.78rem, 2vw, 0.92rem);
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 10px;
+      letter-spacing: 0.04em;
+    }
+    #name-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(57,255,20,0.06);
+      border: 2px solid rgba(57,255,20,0.4);
+      border-radius: 12px;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      margin-bottom: 14px;
+      text-align: center;
+      letter-spacing: 0.04em;
+    }
+    #name-input::placeholder { color: rgba(255,255,255,0.28); }
+    #name-input:focus {
+      border-color: rgba(57,255,20,0.8);
+      box-shadow: 0 0 18px rgba(57,255,20,0.25);
+    }
+    #name-btn {
+      width: 100%;
+      padding: 13px 24px;
+      background: linear-gradient(135deg, #1a6306, #2daa10, #1d7008);
+      color: #000;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(0.85rem, 2.5vw, 1rem);
+      cursor: pointer;
+      letter-spacing: 0.07em;
+      transition: all 0.28s var(--ease-bounce);
+      box-shadow: 0 4px 18px rgba(57,255,20,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+      touch-action: manipulation;
+      margin-bottom: 10px;
+    }
+    #name-btn:hover { transform: scale(1.04) translateY(-1px); filter: brightness(1.15); }
+    #name-btn:active { transform: scale(0.97); transition-duration: 0.08s; }
+    #name-skip {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.28);
+      font-family: Arial, sans-serif;
+      font-size: 0.78rem;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 4px 8px;
+      transition: color 0.2s;
+      touch-action: manipulation;
+    }
+    #name-skip:hover { color: rgba(255,255,255,0.55); }
+
+    /* ─────────────────── Leaderboard detail view ─────────────────── */
+    #lb-back {
+      display: none;
+      background: rgba(57,255,20,0.07);
+      border: 1.5px solid rgba(57,255,20,0.28);
+      color: var(--green2);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-family: Arial, sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+      margin-bottom: 14px;
+      transition: all 0.2s var(--ease-bounce);
+      touch-action: manipulation;
+    }
+    #lb-back:hover { background: rgba(57,255,20,0.15); transform: translateX(-2px); }
+    #lb-back:active { transform: scale(0.97); transition-duration: 0.08s; }
+
+    .lb-clickable { cursor: pointer; }
+    .lb-clickable:hover { background: rgba(57,255,20,0.1) !important; }
+
+    .lb-detail-header {
+      font-size: clamp(1.1rem, 4vw, 1.4rem);
+      color: var(--green);
+      text-align: center;
+      margin-bottom: 5px;
+      text-shadow: 0 0 14px rgba(57,255,20,0.5);
+    }
+    .lb-detail-stats {
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.65rem, 1.5vw, 0.82rem);
+      color: var(--yellow);
+      text-align: center;
+      margin-bottom: 16px;
+      opacity: 0.88;
+    }
+    .lb-rating-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 13px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      margin-bottom: 5px;
+      font-family: Arial, sans-serif;
+      transition: background 0.15s;
+    }
+    .lb-rating-row:hover { background: rgba(255,255,255,0.07); }
+    .lb-rating-name  { font-size: clamp(0.72rem, 1.7vw, 0.88rem); color: #fff; }
+    .lb-rating-value {
+      font-size: clamp(0.7rem, 1.5vw, 0.84rem);
+      color: var(--yellow);
+      font-weight: bold;
+      white-space: nowrap;
+    }
+    .lb-detail-empty {
+      font-family: Arial, sans-serif;
+      color: rgba(255,255,255,0.32);
+      text-align: center;
+      padding: 22px 16px;
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
     /* ── Short vote labels (hidden by default, shown on mobile) ── */
     .vote-short { display: none; }
 
@@ -628,7 +804,9 @@
     @media (max-width: 600px) {
 
       /* Prevent tap flash & improve touch responsiveness */
-      * { -webkit-tap-highlight-color: transparent; }
+      button, a, [role="button"], .side, .star-btn, .lb-clickable {
+        -webkit-tap-highlight-color: transparent;
+      }
       button { touch-action: manipulation; }
 
       /* ── Header ── */
@@ -720,8 +898,17 @@
       #winner-wins  { font-size: 0.82rem; margin-top: 8px; }
       #next-btn { padding: 11px 28px; font-size: 0.88rem; margin-top: 16px; }
 
-      /* ── Leaderboard ── */
-      #lb-box { padding: 16px 12px 20px; border-radius: 18px; }
+      /* ── Name box on very small screens ── */
+      #name-box { padding: 26px 20px; border-radius: 18px; }
+      #name-logo { font-size: 3.5rem; }
+      #name-title { font-size: 1.4rem; }
+      #name-input { font-size: 0.9rem; padding: 10px 14px; }
+      #name-btn { font-size: 0.88rem; padding: 12px 20px; }
+
+      /* ── Leaderboard detail on mobile ── */
+      .lb-rating-row { padding: 7px 10px; }
+      .lb-rating-name { font-size: 0.72rem; }
+      .lb-rating-value { font-size: 0.7rem; }
       #lb-title { font-size: 1.15rem; letter-spacing: 0.07em; }
       #lb-subtitle { font-size: 0.62rem; margin-bottom: 14px; }
       .lb-row {
@@ -746,6 +933,19 @@
   </style>
 </head>
 <body>
+
+  <!-- Name-entry overlay (shown before first round) -->
+  <div id="name-overlay">
+    <div id="name-box">
+      <div id="name-logo">💨</div>
+      <div id="name-title">STINKR</div>
+      <div id="name-tagline">The Ultimate Fart Battle</div>
+      <div id="name-label">What's your stink name?</div>
+      <input type="text" id="name-input" placeholder="Enter your name…" maxlength="20" autocomplete="off" />
+      <button id="name-btn" onclick="submitName()">Enter the Stink Zone 💨</button>
+      <button id="name-skip" onclick="submitName(true)">Skip (anonymous)</button>
+    </div>
+  </div>
 
   <canvas id="particles"></canvas>
 
@@ -828,7 +1028,8 @@
   <div id="lb-overlay" onclick="hideLbOnBackdrop(event)">
     <div id="lb-box">
       <div id="lb-title">🏆 STINK LEADERBOARD</div>
-      <div id="lb-subtitle">Greatest farts of all time</div>
+      <div id="lb-subtitle">Greatest farts · tap a row to see ratings</div>
+      <button id="lb-back" onclick="backToLeaderboard()">← Back to Board</button>
       <div id="lb-content"></div>
       <button id="lb-close" onclick="hideLeaderboard()">Close 💨</button>
     </div>
@@ -839,6 +1040,9 @@
     'use strict';
 
     var SESSION_WIN_LIMIT = 10;
+
+    /* ── Player name ────────────────────────────────── */
+    var playerName = loadStorage('stinkr_name', '');
 
     /* ── Fart catalogue ────────────────────────────────── */
     var FARTS = [
@@ -866,7 +1070,8 @@
     var lbData = loadStorage('stinkr_lb', {});
 
     function getLbEntry(name) {
-      if (!lbData[name]) lbData[name] = { wins: 0, totalRating: 0, timesRated: 0 };
+      if (!lbData[name]) lbData[name] = { wins: 0, totalRating: 0, timesRated: 0, ratings: [] };
+      if (!lbData[name].ratings) lbData[name].ratings = []; // backward-compat
       return lbData[name];
     }
     function saveLb() { saveStorage('stinkr_lb', lbData); }
@@ -990,6 +1195,7 @@
       var entry = getLbEntry(fartName);
       entry.totalRating += rating;
       entry.timesRated  += 1;
+      entry.ratings.push({ name: playerName || 'Anonymous', value: rating });
       saveLb();
 
       var container = side === 'left' ? leftStars : rightStars;
@@ -1164,6 +1370,8 @@
 
     /* ── Leaderboard ─────────────────────────────────── */
     window.showLeaderboard = function () {
+      document.getElementById('lb-back').style.display = 'none';
+      document.getElementById('lb-subtitle').style.display = '';
       renderLeaderboard();
       document.getElementById('lb-overlay').classList.add('show');
     };
@@ -1175,6 +1383,15 @@
     window.hideLbOnBackdrop = function (e) {
       if (e.target === document.getElementById('lb-overlay')) hideLeaderboard();
     };
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
 
     function renderLeaderboard() {
       var content = document.getElementById('lb-content');
@@ -1210,7 +1427,7 @@
 
       entries.forEach(function (e, idx) {
         var medalClass = idx === 0 ? 'lb-medal-1' : idx === 1 ? 'lb-medal-2' : idx === 2 ? 'lb-medal-3' : 'lb-medal-other';
-        html += '<div class="lb-row ' + medalClass + '">'
+        html += '<div class="lb-row lb-clickable ' + medalClass + '" data-fart-name="' + escapeHtml(e.name) + '" title="Tap to see ratings">'
           + '<div class="lb-rank">' + (idx >= 3 ? idx + 1 : '') + '</div>'
           + '<div class="lb-name">' + e.emoji + ' ' + e.name + '</div>'
           + '<div class="lb-wins">' + (e.wins > 0 ? e.wins : '—') + '</div>'
@@ -1220,6 +1437,64 @@
 
       content.innerHTML = html;
     }
+
+    window.showFartDetail = function (fartName) {
+      var fart = null;
+      for (var i = 0; i < FARTS.length; i++) {
+        if (FARTS[i].name === fartName) { fart = FARTS[i]; break; }
+      }
+      if (!fart) return;
+
+      var entry = getLbEntry(fartName);
+      document.getElementById('lb-back').style.display = 'block';
+      document.getElementById('lb-subtitle').style.display = 'none';
+
+      var avgText = entry.timesRated > 0
+        ? (entry.totalRating / entry.timesRated).toFixed(1) + '/10 avg (' + entry.timesRated + ' rating' + (entry.timesRated === 1 ? '' : 's') + ')'
+        : 'No ratings yet';
+
+      var html = '<div class="lb-detail-header">' + escapeHtml(fart.emoji) + ' ' + escapeHtml(fart.name) + '</div>'
+        + '<div class="lb-detail-stats">👑 ' + entry.wins + ' win' + (entry.wins === 1 ? '' : 's') + ' &nbsp;·&nbsp; ⭐ ' + avgText + '</div>';
+
+      if (entry.ratings.length === 0) {
+        html += '<div class="lb-detail-empty">No named ratings yet.<br>Be the first to rate this fart! 💨</div>';
+      } else {
+        entry.ratings.forEach(function (r) {
+          html += '<div class="lb-rating-row">'
+            + '<span class="lb-rating-name">' + escapeHtml(r.name) + '</span>'
+            + '<span class="lb-rating-value">★ ' + r.value + ' / 10</span>'
+            + '</div>';
+        });
+      }
+
+      document.getElementById('lb-content').innerHTML = html;
+    };
+
+    window.backToLeaderboard = function () {
+      document.getElementById('lb-back').style.display = 'none';
+      document.getElementById('lb-subtitle').style.display = '';
+      renderLeaderboard();
+    };
+
+    // Delegated click for leaderboard rows (survives innerHTML replacement)
+    document.getElementById('lb-content').addEventListener('click', function (e) {
+      var row = e.target.closest('[data-fart-name]');
+      if (row) window.showFartDetail(row.getAttribute('data-fart-name'));
+    });
+
+    /* ── Name entry ──────────────────────────────────── */
+    window.submitName = function (skip) {
+      if (!skip) {
+        var input = document.getElementById('name-input');
+        var val = input ? input.value.trim() : '';
+        playerName = val || 'Anonymous';
+      } else {
+        playerName = 'Anonymous';
+      }
+      if (playerName !== 'Anonymous') saveStorage('stinkr_name', playerName);
+      document.getElementById('name-overlay').classList.remove('show');
+      setupRound();
+    };
 
     /* ── Particle system ─────────────────────────────── */
     (function initParticles() {
@@ -1284,7 +1559,18 @@
     })();
 
     /* ── Boot ────────────────────────────────────────── */
-    setupRound();
+    // Pre-fill saved name and show welcome overlay
+    (function () {
+      var input = document.getElementById('name-input');
+      if (input && playerName) input.value = playerName;
+      // Submit on Enter key
+      if (input) {
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') submitName();
+        });
+      }
+      document.getElementById('name-overlay').classList.add('show');
+    })();
 
   })();
   </script>
