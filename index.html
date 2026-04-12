@@ -874,6 +874,24 @@
     #lb-back:hover { background: rgba(57,255,20,0.15); transform: translateX(-2px); }
     #lb-back:active { transform: scale(0.97); transition-duration: 0.08s; }
 
+    #lb-play {
+      display: none;
+      background: rgba(57,255,20,0.12);
+      border: 1.5px solid rgba(57,255,20,0.45);
+      color: var(--green);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-family: Arial, sans-serif;
+      font-size: 0.82rem;
+      cursor: pointer;
+      margin-bottom: 14px;
+      margin-left: 8px;
+      transition: all 0.2s var(--ease-bounce);
+      touch-action: manipulation;
+    }
+    #lb-play:hover { background: rgba(57,255,20,0.22); transform: scale(1.05); }
+    #lb-play:active { transform: scale(0.96); transition-duration: 0.08s; }
+
     #lb-exit {
       display: block;
       background: rgba(57,255,20,0.07);
@@ -1110,7 +1128,6 @@
 
   <!-- News ticker -->
   <div id="news-ticker">
-    <div id="news-ticker-label">📺 HOT AND SMELLY</div>
     <div id="news-ticker-scroll">
       <div id="news-ticker-content">💨 Loading stink data…</div>
     </div>
@@ -1191,6 +1208,7 @@
       <div id="lb-subtitle">Greatest farts · tap a row to see ratings</div>
       <button id="lb-exit" onclick="hideLeaderboard()">← Back</button>
       <button id="lb-back" onclick="backToLeaderboard()">← Back to Board</button>
+      <button id="lb-play" onclick="lbPlayCurrent()">🔊 Play Me</button>
       <div id="lb-content"></div>
       <button id="lb-close" onclick="hideLeaderboard()">Close 💨</button>
     </div>
@@ -1544,16 +1562,18 @@
         );
       }
 
-      // Trending: current session champion or all-time leader
+      // Biggest loser: lowest-rated fart (must have at least one rating)
+      if (ratedEntries.length > 0) {
+        var loser = ratedEntries[ratedEntries.length - 1];
+        parts.push('<span class="ticker-trend">💩 BIGGEST LOSER: ' + escapeHtml(loser.emoji) + ' '
+          + escapeHtml(loser.name) + ' — ' + loser.avg.toFixed(1) + '⭐</span>');
+      }
+
+      // Trending: current session champion
       if (champion && champion.wins > 0) {
         parts.push('<span class="ticker-trend">🔥 TRENDING: ' + escapeHtml(champion.fart.emoji) + ' '
           + escapeHtml(champion.fart.name) + ' — ' + champion.wins
           + (champion.wins === 1 ? ' win' : ' wins') + ' this session</span>');
-      } else if (entries.length > 0) {
-        var leader = entries[0];
-        parts.push('<span class="ticker-trend">🔥 ALL-TIME LEADER: ' + escapeHtml(leader.emoji) + ' '
-          + escapeHtml(leader.name) + ' — ' + leader.wins
-          + (leader.wins === 1 ? ' win' : ' wins') + '</span>');
       }
 
       if (parts.length === 0) {
@@ -2014,8 +2034,13 @@
 
       var entry = getLbEntry(fartName);
       document.getElementById('lb-back').style.display = 'block';
+      document.getElementById('lb-play').style.display = 'inline-block';
       document.getElementById('lb-exit').style.display = 'none';
       document.getElementById('lb-subtitle').style.display = 'none';
+      document.getElementById('lb-play').onclick = function () {
+        var a = new Audio(fart.file);
+        a.play().catch(function () {/* autoplay guard */});
+      };
 
       var avgText = entry.timesRated > 0
         ? (entry.totalRating / entry.timesRated).toFixed(1) + '/10 avg (' + entry.timesRated + ' rating' + (entry.timesRated === 1 ? '' : 's') + ')'
@@ -2040,6 +2065,7 @@
 
     window.backToLeaderboard = function () {
       document.getElementById('lb-back').style.display = 'none';
+      document.getElementById('lb-play').style.display = 'none';
       document.getElementById('lb-exit').style.display = 'block';
       document.getElementById('lb-subtitle').style.display = '';
       renderLeaderboard();
