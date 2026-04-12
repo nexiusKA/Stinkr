@@ -787,67 +787,6 @@
       transform: translateX(-50%) translateY(0);
     }
 
-    /* ─────────────────── Firebase auth section ─────────────────── */
-    #fb-auth-section {
-      margin-top: 18px;
-      padding-top: 16px;
-      border-top: 1px solid rgba(57,255,20,0.15);
-    }
-    #fb-auth-divider {
-      font-family: Arial, sans-serif;
-      font-size: 0.72rem;
-      color: rgba(255,255,255,0.3);
-      margin-bottom: 12px;
-      letter-spacing: 0.04em;
-    }
-    .fb-input {
-      width: 100%;
-      padding: 10px 14px;
-      background: rgba(57,255,20,0.04);
-      border: 1.5px solid rgba(57,255,20,0.25);
-      border-radius: 10px;
-      color: #fff;
-      font-family: Arial, sans-serif;
-      font-size: 0.88rem;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      margin-bottom: 8px;
-      text-align: center;
-    }
-    .fb-input::placeholder { color: rgba(255,255,255,0.22); }
-    .fb-input:focus {
-      border-color: rgba(57,255,20,0.6);
-      box-shadow: 0 0 12px rgba(57,255,20,0.15);
-    }
-    #fb-auth-btns {
-      display: flex;
-      gap: 8px;
-      margin-top: 4px;
-    }
-    .fb-btn {
-      flex: 1;
-      padding: 9px 10px;
-      background: rgba(57,255,20,0.08);
-      border: 1.5px solid rgba(57,255,20,0.3);
-      color: var(--green2);
-      border-radius: 9px;
-      font-family: Arial, sans-serif;
-      font-size: 0.78rem;
-      cursor: pointer;
-      transition: all 0.22s var(--ease-bounce);
-      letter-spacing: 0.04em;
-      touch-action: manipulation;
-    }
-    .fb-btn:hover { background: rgba(57,255,20,0.18); transform: scale(1.03); }
-    .fb-btn:active { transform: scale(0.97); transition-duration: 0.08s; }
-    #fb-auth-msg {
-      font-family: Arial, sans-serif;
-      font-size: 0.72rem;
-      min-height: 1.1em;
-      margin-top: 8px;
-      color: rgba(255,255,255,0.45);
-      text-align: center;
-    }
     #sync-status {
       font-family: Arial, sans-serif;
       font-size: 0.68rem;
@@ -1073,17 +1012,7 @@
       <input type="text" id="session-input" placeholder="E.g. Friday Night Stinks…" maxlength="30" autocomplete="off" />
       <button id="name-btn" onclick="submitName()">Enter the Stink Zone 💨</button>
       <button id="name-skip" onclick="submitName(true)">Skip (anonymous)</button>
-      <div id="fb-auth-section">
-        <div id="fb-auth-divider">— optional: sign in to sync ratings across devices —</div>
-        <input type="email" id="fb-email" class="fb-input" placeholder="Email (optional)" autocomplete="email" />
-        <input type="password" id="fb-password" class="fb-input" placeholder="Password" autocomplete="current-password" />
-        <div id="fb-auth-btns">
-          <button class="fb-btn" onclick="fbSignIn()">Sign In</button>
-          <button class="fb-btn" onclick="fbRegister()">Register</button>
-        </div>
-        <div id="fb-auth-msg"></div>
-        <div id="sync-status">📱 Local only</div>
-      </div>
+      <div id="sync-status">📱 Local only</div>
     </div>
   </div>
 
@@ -1180,7 +1109,6 @@
 
   <!-- Firebase SDK (compat v9 – replace config below with your own project values) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
   <script>
@@ -1336,10 +1264,8 @@
       measurementId:     'G-B7NYGCTS3F',
     };
 
-    var fbDb             = null;
-    var fbAuth           = null;
-    var fbUserId         = null;
-    var fbListenersSet   = false;
+    var fbDb           = null;
+    var fbListenersSet = false;
 
     function fbKey(name) {
       // Firebase paths cannot contain . # $ [ ] /
@@ -1356,13 +1282,6 @@
         el.textContent = '📱 Local only';
         el.classList.remove('live');
       }
-    }
-
-    function fbSetAuthMsg(msg, isError) {
-      var el = document.getElementById('fb-auth-msg');
-      if (!el) return;
-      el.textContent = msg;
-      el.style.color = isError ? '#ff6b6b' : 'rgba(57,255,20,0.85)';
     }
 
     function fbListenGlobal() {
@@ -1425,7 +1344,7 @@
     }
 
     function fbSaveWin(fartName) {
-      if (!fbDb || !fbUserId) return;
+      if (!fbDb) return;
       var key = fbKey(fartName);
       fbDb.ref('stinkr/wins/' + key).transaction(function (val) {
         return (val || 0) + 1;
@@ -1433,18 +1352,16 @@
     }
 
     function fbSaveRating(fartName, value, raterName) {
-      if (!fbDb || !fbUserId) return;
+      if (!fbDb) return;
       var key = fbKey(fartName);
       fbDb.ref('stinkr/ratings/' + key).push({
-        value:  value,
-        name:   raterName || 'Anonymous',
-        userId: fbUserId,
-        ts:     Date.now(),
+        value: value,
+        name:  raterName || 'Anonymous',
+        ts:    Date.now(),
       });
     }
 
-    var sessionName        = '';
-    var pendingSessionName = null;
+    var sessionName = '';
 
     function fbSaveSession(name, extra) {
       if (!fbDb || !name) return;
@@ -1456,7 +1373,7 @@
         if (extra.status)   data.status   = extra.status;
         if (extra.champion) data.champion = extra.champion;
       }
-      fbDb.ref('sessions').push(data)
+      fbDb.ref('sessions/' + fbKey(name)).set(data)
         .then(function () {
           showSessionToast('✓ Session "' + name + '" saved!');
         })
@@ -1479,50 +1396,13 @@
         if (FIREBASE_CONFIG.apiKey === 'YOUR_API_KEY') return; // not yet configured
 
         firebase.initializeApp(FIREBASE_CONFIG);
-        fbDb   = firebase.database();
-        fbAuth = firebase.auth();
-
-        fbAuth.onAuthStateChanged(function (user) {
-          if (user) {
-            fbUserId = user.uid;
-            fbListenGlobal();
-            fbSetSyncStatus(true);
-            if (pendingSessionName) {
-              fbSaveSession(pendingSessionName);
-              pendingSessionName = null;
-            }
-          } else {
-            fbUserId = null;
-            fbSetSyncStatus(false);
-          }
-        });
+        fbDb = firebase.database();
+        fbListenGlobal();
+        fbSetSyncStatus(true);
       } catch (e) {
         console.warn('Firebase init error:', e);
       }
     }
-
-    // Called from the name overlay auth buttons
-    window.fbSignIn = function () {
-      if (!fbAuth) { fbSetAuthMsg('Firebase not configured.', true); return; }
-      var email = (document.getElementById('fb-email').value || '').trim();
-      var pass  = (document.getElementById('fb-password').value || '');
-      if (!email || !pass) { fbSetAuthMsg('Enter email and password.', true); return; }
-      fbSetAuthMsg('Signing in…');
-      fbAuth.signInWithEmailAndPassword(email, pass)
-        .then(function () { fbSetAuthMsg('✓ Signed in! Syncing ratings…'); })
-        .catch(function (e) { fbSetAuthMsg(e.message, true); });
-    };
-
-    window.fbRegister = function () {
-      if (!fbAuth) { fbSetAuthMsg('Firebase not configured.', true); return; }
-      var email = (document.getElementById('fb-email').value || '').trim();
-      var pass  = (document.getElementById('fb-password').value || '');
-      if (!email || !pass) { fbSetAuthMsg('Enter email and password.', true); return; }
-      fbSetAuthMsg('Creating account…');
-      fbAuth.createUserWithEmailAndPassword(email, pass)
-        .then(function () { fbSetAuthMsg('✓ Account created! Ratings will sync globally.'); })
-        .catch(function (e) { fbSetAuthMsg(e.message, true); });
-    };
 
     /* ── State ─────────────────────────────────────────── */
     var champion = null;   // { fart, wins } or null first round
@@ -1871,9 +1751,9 @@
         return b.wins !== a.wins ? b.wins - a.wins : b.avgRating - a.avgRating;
       });
 
-      var sourceBadge = fbUserId
+      var sourceBadge = fbDb
         ? '<div style="font-family:Arial,sans-serif;font-size:0.68rem;color:#39ff14;text-align:center;margin-bottom:10px;opacity:0.85;">🌍 Global ratings from all players</div>'
-        : '<div style="font-family:Arial,sans-serif;font-size:0.68rem;color:rgba(255,255,255,0.3);text-align:center;margin-bottom:10px;">📱 Local ratings only · sign in to see global board</div>';
+        : '<div style="font-family:Arial,sans-serif;font-size:0.68rem;color:rgba(255,255,255,0.3);text-align:center;margin-bottom:10px;">📱 Local ratings only</div>';
 
       var hasAny = entries.some(function (e) { return e.wins > 0 || e.timesRated > 0; });
       if (!hasAny) {
@@ -1962,18 +1842,7 @@
 
       // Save session name to Firebase
       if (sessionName) {
-        if (fbDb && fbUserId) {
-          fbSaveSession(sessionName);
-        } else if (fbDb) {
-          pendingSessionName = sessionName; // saved after anonymous auth completes
-        }
-      }
-
-      // If Firebase is configured but no user signed in yet, use anonymous auth
-      if (fbAuth && !fbUserId) {
-        fbAuth.signInAnonymously().catch(function (e) {
-          console.warn('Anonymous sign-in failed:', e);
-        });
+        fbSaveSession(sessionName);
       }
       setupRound();
     };
