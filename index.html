@@ -1497,8 +1497,8 @@
 
       var parts = [];
 
-      // Live events (up to 3 most recent)
-      for (var li = 0; li < Math.min(3, tickerLiveQueue.length); li++) {
+      // Live events (up to 5 most recent)
+      for (var li = 0; li < tickerLiveQueue.length; li++) {
         parts.push('<span class="ticker-live">⚡ ' + escapeHtml(tickerLiveQueue[li]) + '</span>');
       }
 
@@ -1541,7 +1541,9 @@
       var sep = '<span class="ticker-sep"> ✦ </span>';
       el.innerHTML = parts.join(sep);
 
-      // Scale animation speed to content length
+      // Scale animation speed to content length:
+      // 0.13s per character gives comfortable reading pace; clamped to
+      // 18s minimum (very short messages) and 70s maximum (very long messages).
       var dur = Math.max(18, Math.min(70, el.textContent.length * 0.13));
       el.style.animation = 'none';
       void el.offsetWidth; // force reflow to restart animation
