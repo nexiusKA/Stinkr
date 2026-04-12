@@ -716,7 +716,7 @@
   (function () {
     'use strict';
 
-    var MAX_FARTS_PER_ROUND = 10;
+    var SESSION_WIN_LIMIT = 10;
 
     /* ── Fart catalogue ────────────────────────────────── */
     var FARTS = [
@@ -754,8 +754,8 @@
     var leftFart  = null;
     var rightFart = null;
     var audios    = { left: null, right: null };
-    var fartsPlayedThisRound = 0;
-    var roundLocked = false;
+    var winnersThisSession = 0;
+    var ratedThisSession = {}; // { fartName: true }
 
     /* ── DOM refs ─────────────────────────────────────── */
     var leftSide  = document.getElementById('left-side');
@@ -825,14 +825,11 @@
 
     function updateFartCounter() {
       fartCounter.classList.remove('warning', 'maxed');
-      if (fartsPlayedThisRound >= MAX_FARTS_PER_ROUND) {
-        fartCounter.textContent = '🗳️ ROUND OVER — Cast your vote!';
+      fartCounter.textContent = '🏆 ' + winnersThisSession + ' / ' + SESSION_WIN_LIMIT + ' winners chosen';
+      if (winnersThisSession >= SESSION_WIN_LIMIT) {
         fartCounter.classList.add('maxed');
-      } else {
-        fartCounter.textContent = '💨 ' + fartsPlayedThisRound + ' / ' + MAX_FARTS_PER_ROUND + ' farts sniffed';
-        if (MAX_FARTS_PER_ROUND - fartsPlayedThisRound <= 3) {
-          fartCounter.classList.add('warning');
-        }
+      } else if (SESSION_WIN_LIMIT - winnersThisSession <= 3) {
+        fartCounter.classList.add('warning');
       }
     }
 
@@ -840,16 +837,24 @@
     function buildStars(side, fartName) {
       var container = side === 'left' ? leftStars : rightStars;
       container.innerHTML = '';
+      var alreadyRated = ratedThisSession[fartName];
       for (var i = 1; i <= 10; i++) {
         (function (rating) {
           var btn = document.createElement('button');
           btn.className = 'star-btn';
           btn.textContent = rating;
           btn.setAttribute('aria-label', 'Rate ' + rating + ' out of 10');
-          btn.onclick = function (e) {
-            e.stopPropagation();
-            submitRating(side, fartName, rating);
-          };
+          if (alreadyRated) {
+            btn.disabled = true;
+            btn.style.cursor = 'not-allowed';
+            if (rating === alreadyRated) btn.classList.add('selected');
+            else if (rating < alreadyRated) btn.classList.add('lit');
+          } else {
+            btn.onclick = function (e) {
+              e.stopPropagation();
+              submitRating(side, fartName, rating);
+            };
+          }
           container.appendChild(btn);
         })(i);
       }
@@ -857,6 +862,9 @@
     }
 
     function submitRating(side, fartName, rating) {
+      if (ratedThisSession[fartName]) return; // prevent re-rating
+      ratedThisSession[fartName] = rating;
+
       var entry = getLbEntry(fartName);
       entry.totalRating += rating;
       entry.timesRated  += 1;
@@ -866,6 +874,8 @@
       var btns = container.querySelectorAll('.star-btn');
       btns.forEach(function (b, idx) {
         b.classList.remove('selected', 'lit');
+        b.disabled = true;
+        b.style.cursor = 'not-allowed';
         if (idx + 1 === rating) b.classList.add('selected');
         else if (idx + 1 < rating) b.classList.add('lit');
       });
@@ -891,10 +901,6 @@
 
     /* ── Round setup ─────────────────────────────────── */
     function setupRound() {
-      fartsPlayedThisRound = 0;
-      roundLocked = false;
-      leftSide.classList.remove('locked');
-      rightSide.classList.remove('locked');
       leftRatingPanel.classList.remove('visible');
       rightRatingPanel.classList.remove('visible');
 
@@ -954,12 +960,6 @@
 
     /* ── Click handlers ──────────────────────────────── */
     function handleSideClick(side) {
-      if (roundLocked) {
-        var s = side === 'left' ? leftStatus : rightStatus;
-        s.textContent = '🗳️ Time to vote!';
-        return;
-      }
-
       var status = side === 'left' ? leftStatus : rightStatus;
       playAudio(side);
       triggerJiggle(side);
@@ -970,17 +970,6 @@
 
       // Show rating panel on first play of each side
       showRatingPanel(side);
-
-      fartsPlayedThisRound++;
-      updateFartCounter();
-
-      if (fartsPlayedThisRound >= MAX_FARTS_PER_ROUND) {
-        roundLocked = true;
-        leftSide.classList.add('locked');
-        rightSide.classList.add('locked');
-        leftStatus.textContent  = '🗳️ Vote now!';
-        rightStatus.textContent = '🗳️ Vote now!';
-      }
     }
 
     leftSide.addEventListener('click',   function () { handleSideClick('left'); });
@@ -1007,28 +996,47 @@
       getLbEntry(winner.name).wins += 1;
       saveLb();
 
-      // Show overlay
-      winnerEmoji.textContent = winner.emoji;
-      winnerName.textContent  = winner.name;
-      winnerWins.textContent  =
-        champion.wins === 1
-          ? '🏆 First win — they\'re coming for the throne!'
-          : '🏆 ' + champion.wins + ' wins and counting — unstoppable!';
+      winnersThisSession++;
+      updateFartCounter();
 
-      var entry = getLbEntry(winner.name);
-      if (entry.timesRated > 0) {
+      if (winnersThisSession >= SESSION_WIN_LIMIT) {
+        showGameOver();
+        return;
+      }
+
+      setupRound();
+    };
+
+    /* ── Game Over ───────────────────────────────────── */
+    function showGameOver() {
+      winnerEmoji.textContent = champion ? champion.fart.emoji : '💨';
+      winnerName.textContent  = champion ? champion.fart.name  : '—';
+      document.getElementById('winner-label').textContent = '🎉 SESSION COMPLETE! 🎉';
+      winnerWins.textContent = champion
+        ? '👑 Session champion with ' + champion.wins + ' win' + (champion.wins === 1 ? '' : 's') + '!'
+        : '';
+
+      var entry = champion ? getLbEntry(champion.fart.name) : null;
+      if (entry && entry.timesRated > 0) {
         var avg = (entry.totalRating / entry.timesRated).toFixed(1);
         winnerRating.textContent = '⭐ Community rating: ' + avg + '/10';
       } else {
-        winnerRating.textContent = '⭐ No ratings yet — be the first!';
+        winnerRating.textContent = '';
       }
 
+      document.getElementById('next-btn').textContent = 'Play Again 💨';
       overlay.classList.add('show');
-    };
+    }
 
     /* ── Next round ──────────────────────────────────── */
     window.nextRound = function () {
       overlay.classList.remove('show');
+      document.getElementById('winner-label').textContent = '🏆 STINKR OF THE ROUND 🏆';
+      document.getElementById('next-btn').textContent = 'Next Challenger 💨';
+      winnersThisSession = 0;
+      ratedThisSession = {};
+      champion = null;
+      updateFartCounter();
       setupRound();
     };
 
