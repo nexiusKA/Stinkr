@@ -1544,16 +1544,11 @@
         );
       }
 
-      // Trending: current session champion or all-time leader
+      // Trending: current session champion
       if (champion && champion.wins > 0) {
         parts.push('<span class="ticker-trend">🔥 TRENDING: ' + escapeHtml(champion.fart.emoji) + ' '
           + escapeHtml(champion.fart.name) + ' — ' + champion.wins
           + (champion.wins === 1 ? ' win' : ' wins') + ' this session</span>');
-      } else if (entries.length > 0) {
-        var leader = entries[0];
-        parts.push('<span class="ticker-trend">🔥 ALL-TIME LEADER: ' + escapeHtml(leader.emoji) + ' '
-          + escapeHtml(leader.name) + ' — ' + leader.wins
-          + (leader.wins === 1 ? ' win' : ' wins') + '</span>');
       }
 
       if (parts.length === 0) {
