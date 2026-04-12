@@ -1544,6 +1544,13 @@
         );
       }
 
+      // Biggest loser: lowest-rated fart (must have at least one rating)
+      if (ratedEntries.length > 0) {
+        var loser = ratedEntries[ratedEntries.length - 1];
+        parts.push('<span class="ticker-trend">💩 BIGGEST LOSER: ' + escapeHtml(loser.emoji) + ' '
+          + escapeHtml(loser.name) + ' — ' + loser.avg.toFixed(1) + '⭐</span>');
+      }
+
       // Trending: current session champion
       if (champion && champion.wins > 0) {
         parts.push('<span class="ticker-trend">🔥 TRENDING: ' + escapeHtml(champion.fart.emoji) + ' '
