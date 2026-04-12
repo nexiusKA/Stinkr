@@ -1502,6 +1502,8 @@
 
     /* ── News Ticker ──────────────────────────────────── */
     var tickerLiveQueue = [];
+    var tickerInitialized = false;
+    var tickerPendingUpdate = false;
 
     function pushTickerEvent(msg) {
       tickerLiveQueue.unshift(msg);
@@ -1509,7 +1511,17 @@
       updateNewsTicker();
     }
 
+    // Queue an update; if the ticker hasn't started yet apply it immediately,
+    // otherwise let the animationiteration handler pick it up at cycle end.
     function updateNewsTicker() {
+      if (tickerInitialized) {
+        tickerPendingUpdate = true;
+      } else {
+        applyTickerUpdate();
+      }
+    }
+
+    function applyTickerUpdate() {
       var el = document.getElementById('news-ticker-content');
       if (!el) return;
 
@@ -1590,6 +1602,17 @@
       el.style.animation = 'none';
       void el.offsetWidth; // force reflow to restart animation
       el.style.animation = 'ticker-scroll ' + dur + 's linear infinite';
+
+      if (!tickerInitialized) {
+        tickerInitialized = true;
+        // After each full scroll cycle, apply any queued update.
+        el.addEventListener('animationiteration', function () {
+          if (tickerPendingUpdate) {
+            tickerPendingUpdate = false;
+            applyTickerUpdate();
+          }
+        });
+      }
     }
 
     function initFirebase() {
