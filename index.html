@@ -1502,6 +1502,28 @@
         parts.push('<span class="ticker-live">⚡ ' + escapeHtml(tickerLiveQueue[li]) + '</span>');
       }
 
+      var medals = ['🥇', '🥈', '🥉'];
+
+      // Top 3 by rating (must have at least one rating)
+      var ratedEntries = FARTS.map(function (f) {
+        var e = getLbEntry(f.name);
+        var avg = e.timesRated > 0 ? e.totalRating / e.timesRated : null;
+        return { name: f.name, emoji: f.emoji, wins: e.wins, avg: avg, timesRated: e.timesRated };
+      }).filter(function (e) { return e.avg !== null; });
+      ratedEntries.sort(function (a, b) { return b.avg - a.avg; });
+
+      if (ratedEntries.length > 0) {
+        var top3Rated = ratedEntries.slice(0, 3);
+        parts.push(
+          '<span class="ticker-top">⭐ TOP RATED: '
+          + top3Rated.map(function (e, i) {
+              return medals[i] + ' ' + escapeHtml(e.emoji) + ' ' + escapeHtml(e.name)
+                     + ' — ' + e.avg.toFixed(1) + '/10';
+            }).join('  ·  ')
+          + '</span>'
+        );
+      }
+
       // Top 3 by wins
       var entries = FARTS.map(function (f) {
         var e = getLbEntry(f.name);
@@ -1511,14 +1533,12 @@
       entries.sort(function (a, b) { return b.wins - a.wins; });
 
       if (entries.length > 0) {
-        var medals = ['🥇', '🥈', '🥉'];
         var top3 = entries.slice(0, 3);
         parts.push(
-          '<span class="ticker-top">🏆 TOP STINKS: '
+          '<span class="ticker-top">🏆 TOP WINS: '
           + top3.map(function (e, i) {
-              var rating = e.avg !== null ? ' · ⭐ ' + e.avg : '';
               return medals[i] + ' ' + escapeHtml(e.emoji) + ' ' + escapeHtml(e.name)
-                     + ' — ' + e.wins + (e.wins === 1 ? ' win' : ' wins') + rating;
+                     + ' — ' + e.wins + (e.wins === 1 ? ' win' : ' wins');
             }).join('  ·  ')
           + '</span>'
         );
