@@ -594,6 +594,8 @@
     .lb-medal-2 .lb-rank::before { content: '🥈'; }
     .lb-medal-3 .lb-rank::before { content: '🥉'; }
     .lb-medal-other .lb-rank { color: rgba(255,255,255,0.35); font-size: 0.82rem; }
+    .lb-sort-btn { cursor: pointer; user-select: none; }
+    .lb-sort-btn:hover { color: #fff; }
     .lb-empty {
       font-family: Arial, sans-serif;
       color: rgba(255,255,255,0.32);
@@ -1721,6 +1723,19 @@
     };
 
     /* ── Leaderboard ─────────────────────────────────── */
+    var lbSortKey = 'wins';   // 'wins' | 'rating'
+    var lbSortDir = 'desc';   // 'asc'  | 'desc'
+
+    window.lbSetSort = function (key) {
+      if (lbSortKey === key) {
+        lbSortDir = lbSortDir === 'desc' ? 'asc' : 'desc';
+      } else {
+        lbSortKey = key;
+        lbSortDir = 'desc';
+      }
+      renderLeaderboard();
+    };
+
     window.showLeaderboard = function () {
       document.getElementById('lb-back').style.display = 'none';
       document.getElementById('lb-subtitle').style.display = '';
@@ -1759,9 +1774,18 @@
         };
       });
 
-      // Sort by wins desc, then avgRating desc
+      // Sort by selected column; secondary sort is the other column (always desc)
       entries.sort(function (a, b) {
-        return b.wins !== a.wins ? b.wins - a.wins : b.avgRating - a.avgRating;
+        var dir = lbSortDir === 'desc' ? -1 : 1;
+        var primary, secondary;
+        if (lbSortKey === 'rating') {
+          primary   = (b.avgRating - a.avgRating) * dir;
+          secondary = b.wins - a.wins;
+        } else {
+          primary   = (b.wins - a.wins) * dir;
+          secondary = b.avgRating - a.avgRating;
+        }
+        return primary !== 0 ? primary : secondary;
       });
 
       var sourceBadge = fbDb
@@ -1774,11 +1798,15 @@
         return;
       }
 
+      var arrow = lbSortDir === 'desc' ? ' ↓' : ' ↑';
+      var winsLabel   = 'Wins'   + (lbSortKey === 'wins'   ? arrow : '');
+      var ratingLabel = 'Rating' + (lbSortKey === 'rating' ? arrow : '');
+
       var html = sourceBadge + '<div class="lb-row lb-header">'
         + '<div class="lb-rank">#</div>'
         + '<div class="lb-name">Fart</div>'
-        + '<div class="lb-wins">Wins</div>'
-        + '<div class="lb-rating">Rating</div>'
+        + '<div class="lb-wins lb-sort-btn" onclick="lbSetSort(\'wins\')">' + winsLabel + '</div>'
+        + '<div class="lb-rating lb-sort-btn" onclick="lbSetSort(\'rating\')">' + ratingLabel + '</div>'
         + '</div>';
 
       entries.forEach(function (e, idx) {
