@@ -17,6 +17,8 @@
       --darker:  #080808;
       --left-bg: #0a1a06;
       --right-bg:#1a1100;
+      --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     html, body {
@@ -45,12 +47,12 @@
       z-index: 20;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 18px;
+      justify-content: space-between;
+      gap: 12px;
       padding: 10px 20px;
-      background: rgba(0,0,0,0.82);
+      background: rgba(0,0,0,0.88);
       border-bottom: 2px solid var(--green);
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(10px);
     }
 
     #header h1 {
@@ -72,14 +74,70 @@
       font-family: Arial, sans-serif;
       font-weight: normal;
       filter: drop-shadow(0 0 6px rgba(255,230,0,0.5));
+      flex: 1;
+    }
+
+    #leaderboard-btn {
+      background: linear-gradient(135deg, rgba(57,255,20,0.12), rgba(57,255,20,0.04));
+      border: 1.5px solid rgba(57,255,20,0.6);
+      color: var(--green2);
+      border-radius: 10px;
+      padding: 7px 16px;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: clamp(0.62rem, 1.6vw, 0.8rem);
+      cursor: pointer;
+      letter-spacing: 0.06em;
+      transition: all 0.25s var(--ease-bounce);
+      white-space: nowrap;
+      flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(57,255,20,0.2), inset 0 1px 0 rgba(57,255,20,0.15);
+    }
+    #leaderboard-btn:hover {
+      transform: scale(1.08) translateY(-1px);
+      background: rgba(57,255,20,0.2);
+      box-shadow: 0 0 22px rgba(57,255,20,0.5), 0 4px 12px rgba(0,0,0,0.3);
+    }
+    #leaderboard-btn:active { transform: scale(0.95); transition-duration: 0.08s; }
+
+    /* ─────────────────── Fart counter ─────────────────── */
+    #fart-counter {
+      position: fixed;
+      top: 56px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 15;
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.62rem, 1.5vw, 0.78rem);
+      color: rgba(255,255,255,0.5);
+      padding: 3px 14px;
+      background: rgba(0,0,0,0.55);
+      border-radius: 0 0 10px 10px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-top: none;
+      letter-spacing: 0.07em;
+      transition: color 0.35s, border-color 0.35s;
+      white-space: nowrap;
+    }
+    #fart-counter.warning {
+      color: var(--yellow);
+      border-color: rgba(255,230,0,0.35);
+    }
+    #fart-counter.maxed {
+      color: #ff5555;
+      border-color: rgba(255,85,85,0.4);
+      animation: pulse-red 0.9s ease-in-out infinite;
+    }
+    @keyframes pulse-red {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.55; }
     }
 
     /* ─────────────────── Arena ─────────────────── */
     #arena {
       position: fixed;
       inset: 0;
-      top: 56px;  /* below header */
-      bottom: 70px; /* above footer vote area */
+      top: 56px;
+      bottom: 70px;
       display: flex;
     }
 
@@ -93,21 +151,22 @@
       cursor: pointer;
       position: relative;
       overflow: hidden;
-      transition: background 0.2s;
+      transition: background 0.3s var(--ease-smooth), filter 0.2s;
     }
 
     #left-side  { background: var(--left-bg);  border-right: 2px solid rgba(57,255,20,0.25); }
     #right-side { background: var(--right-bg); border-left:  2px solid rgba(200,134,10,0.25); }
 
-    .side:hover { filter: brightness(1.12); }
+    .side:hover { filter: brightness(1.15); }
+    .side.locked { cursor: not-allowed; }
+    .side.locked:hover { filter: brightness(0.9); }
 
     .side-glow {
       position: absolute;
       inset: 0;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.25s;
-      border-radius: 0;
+      transition: opacity 0.3s var(--ease-smooth);
     }
     #left-side  .side-glow { background: radial-gradient(ellipse at center, rgba(57,255,20,0.18) 0%, transparent 70%); }
     #right-side .side-glow { background: radial-gradient(ellipse at center, rgba(200,134,10,0.22) 0%, transparent 70%); }
@@ -120,7 +179,7 @@
       line-height: 1;
       margin-bottom: 12px;
       filter: drop-shadow(0 0 24px rgba(57,255,20,0.5));
-      transition: transform 0.1s;
+      transition: transform 0.2s var(--ease-bounce), filter 0.3s;
       pointer-events: none;
     }
     #right-side .fart-blob {
@@ -159,16 +218,6 @@
       pointer-events: none;
     }
 
-    .play-hint {
-      font-size: clamp(0.65rem, 1.6vw, 0.82rem);
-      font-family: Arial, sans-serif;
-      font-weight: normal;
-      margin-top: 18px;
-      opacity: 0.55;
-      letter-spacing: 0.08em;
-      pointer-events: none;
-    }
-
     .play-status {
       font-size: clamp(0.75rem, 1.8vw, 0.95rem);
       font-family: Arial, sans-serif;
@@ -193,9 +242,83 @@
       padding: 4px 12px;
       border-radius: 99px;
       font-family: Arial, sans-serif;
+      box-shadow: 0 0 10px rgba(57,255,20,0.4);
     }
     #left-side  .win-badge { left: 16px;  background: var(--green); }
     #right-side .win-badge { right: 16px; background: var(--brown); color: #fff; }
+
+    /* ─────────────────── Rating panel ─────────────────── */
+    .rating-panel {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 9px 10px 13px;
+      background: rgba(0,0,0,0.78);
+      backdrop-filter: blur(8px);
+      border-top: 1px solid rgba(255,255,255,0.1);
+      transform: translateY(100%);
+      transition: transform 0.38s var(--ease-bounce);
+      z-index: 5;
+    }
+    .rating-panel.visible {
+      transform: translateY(0);
+    }
+    .rating-label {
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.58rem, 1.3vw, 0.75rem);
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+    }
+    .rating-stars {
+      display: flex;
+      justify-content: center;
+      gap: 3px;
+      flex-wrap: wrap;
+    }
+    .star-btn {
+      background: rgba(255,255,255,0.07);
+      border: 1.5px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.45);
+      border-radius: 7px;
+      width: clamp(20px, 3.8vw, 28px);
+      height: clamp(20px, 3.2vw, 26px);
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.58rem, 1.1vw, 0.72rem);
+      cursor: pointer;
+      transition: all 0.18s var(--ease-bounce);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .star-btn:hover {
+      transform: scale(1.25);
+      background: rgba(255,230,0,0.18);
+      border-color: rgba(255,230,0,0.6);
+      color: var(--yellow);
+    }
+    .star-btn.lit {
+      background: rgba(255,230,0,0.18);
+      border-color: rgba(255,230,0,0.5);
+      color: var(--yellow);
+    }
+    .star-btn.selected {
+      background: var(--yellow);
+      color: #000;
+      border-color: var(--yellow);
+      transform: scale(1.18);
+      box-shadow: 0 0 10px rgba(255,230,0,0.55);
+    }
+    .rating-avg {
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.55rem, 1.1vw, 0.7rem);
+      color: rgba(255,255,255,0.4);
+      text-align: center;
+      margin-top: 5px;
+      letter-spacing: 0.04em;
+    }
 
     /* ─────────────────── VS divider ─────────────────── */
     #vs-divider {
@@ -242,9 +365,9 @@
       z-index: 20;
       display: flex;
       align-items: center;
-      background: rgba(0,0,0,0.88);
+      background: rgba(0,0,0,0.92);
       border-top: 2px solid var(--green);
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(10px);
       gap: 10px;
       padding: 0 16px;
     }
@@ -253,22 +376,48 @@
       flex: 1;
       height: 46px;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       font-family: 'Arial Black', Arial, sans-serif;
-      font-size: clamp(0.75rem, 2.5vw, 1rem);
+      font-size: clamp(0.72rem, 2.2vw, 0.95rem);
       letter-spacing: 0.07em;
       cursor: pointer;
-      transition: transform 0.12s, filter 0.12s;
+      transition: all 0.28s var(--ease-bounce);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
+      position: relative;
+      overflow: hidden;
     }
-    .vote-btn:hover  { transform: scale(1.04); filter: brightness(1.2); }
-    .vote-btn:active { transform: scale(0.97); }
+    .vote-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0);
+      transition: background 0.2s;
+    }
+    .vote-btn:hover  {
+      transform: scale(1.05) translateY(-2px);
+      filter: brightness(1.25);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45) !important;
+    }
+    .vote-btn:active {
+      transform: scale(0.96) translateY(0);
+      transition-duration: 0.08s;
+    }
 
-    #vote-left  { background: linear-gradient(135deg, #1a4d0a, #2e8c10); color: var(--green2); border: 2px solid var(--green); box-shadow: 0 0 14px rgba(57,255,20,0.4); }
-    #vote-right { background: linear-gradient(135deg, #4d2e00, #a06010); color: var(--yellow); border: 2px solid var(--brown); box-shadow: 0 0 14px rgba(200,134,10,0.4); }
+    #vote-left  {
+      background: linear-gradient(135deg, #163d08, #2a7a0d, #1e5c09);
+      color: var(--green2);
+      border: 2px solid rgba(57,255,20,0.7);
+      box-shadow: 0 0 16px rgba(57,255,20,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    #vote-right {
+      background: linear-gradient(135deg, #3d2000, #8c5010, #5a3208);
+      color: var(--yellow);
+      border: 2px solid rgba(200,134,10,0.7);
+      box-shadow: 0 0 16px rgba(200,134,10,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
 
     .vote-sep {
       font-size: 1.1rem;
@@ -282,12 +431,13 @@
       position: fixed;
       inset: 0;
       z-index: 100;
-      background: rgba(0,0,0,0.82);
+      background: rgba(0,0,0,0.85);
       align-items: center;
       justify-content: center;
       flex-direction: column;
       gap: 18px;
-      animation: fadein 0.25s ease;
+      animation: fadein 0.25s var(--ease-smooth);
+      backdrop-filter: blur(4px);
     }
     #winner-overlay.show { display: flex; }
 
@@ -297,17 +447,21 @@
     }
 
     #winner-box {
-      background: rgba(5,20,2,0.95);
+      background: linear-gradient(160deg, rgba(5,22,2,0.98), rgba(2,10,1,0.98));
       border: 3px solid var(--green);
-      border-radius: 20px;
+      border-radius: 24px;
       padding: 36px 48px;
       text-align: center;
-      box-shadow: 0 0 60px rgba(57,255,20,0.5);
-      animation: winpop 0.4s cubic-bezier(0.22,1.4,0.55,1);
+      box-shadow:
+        0 0 60px rgba(57,255,20,0.45),
+        0 0 120px rgba(57,255,20,0.1),
+        inset 0 1px 0 rgba(57,255,20,0.15);
+      animation: winpop 0.45s var(--ease-bounce);
+      max-width: 90vw;
     }
     @keyframes winpop {
-      from { transform: scale(0.6); opacity: 0; }
-      to   { transform: scale(1);   opacity: 1; }
+      from { transform: scale(0.6) translateY(20px); opacity: 0; }
+      to   { transform: scale(1)   translateY(0);    opacity: 1; }
     }
 
     #winner-emoji { font-size: 5rem; line-height: 1; }
@@ -329,27 +483,149 @@
       color: rgba(255,255,255,0.6);
       margin-top: 10px;
     }
+    #winner-rating {
+      font-size: clamp(0.75rem, 1.8vw, 0.92rem);
+      font-family: Arial, sans-serif;
+      color: var(--yellow);
+      margin-top: 8px;
+      opacity: 0.88;
+    }
     #next-btn {
       margin-top: 22px;
-      padding: 14px 36px;
-      background: var(--green);
+      padding: 14px 42px;
+      background: linear-gradient(135deg, #1a6306, #2daa10, #1d7008);
       color: #000;
       border: none;
-      border-radius: 10px;
+      border-radius: 12px;
       font-family: 'Arial Black', Arial, sans-serif;
       font-size: clamp(0.9rem, 2.5vw, 1.15rem);
       cursor: pointer;
       letter-spacing: 0.08em;
-      transition: transform 0.12s, filter 0.12s;
+      transition: all 0.28s var(--ease-bounce);
+      box-shadow: 0 4px 18px rgba(57,255,20,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
     }
-    #next-btn:hover  { transform: scale(1.06); filter: brightness(1.15); }
-    #next-btn:active { transform: scale(0.97); }
+    #next-btn:hover  {
+      transform: scale(1.07) translateY(-2px);
+      filter: brightness(1.15);
+      box-shadow: 0 10px 28px rgba(57,255,20,0.55);
+    }
+    #next-btn:active { transform: scale(0.96); transition-duration: 0.08s; }
+
+    /* ─────────────────── Leaderboard overlay ─────────────────── */
+    #lb-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(0,0,0,0.88);
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(6px);
+      animation: fadein 0.2s var(--ease-smooth);
+    }
+    #lb-overlay.show { display: flex; }
+
+    #lb-box {
+      background: linear-gradient(160deg, rgba(5,20,2,0.98), rgba(2,8,1,0.98));
+      border: 3px solid var(--green);
+      border-radius: 24px;
+      padding: 28px 32px 32px;
+      width: min(520px, 92vw);
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow:
+        0 0 60px rgba(57,255,20,0.4),
+        0 0 120px rgba(57,255,20,0.1);
+      animation: winpop 0.35s var(--ease-bounce);
+      scrollbar-width: thin;
+      scrollbar-color: rgba(57,255,20,0.3) transparent;
+    }
+    #lb-box::-webkit-scrollbar { width: 6px; }
+    #lb-box::-webkit-scrollbar-track { background: transparent; }
+    #lb-box::-webkit-scrollbar-thumb { background: rgba(57,255,20,0.3); border-radius: 3px; }
+
+    #lb-title {
+      font-size: clamp(1.2rem, 4vw, 1.7rem);
+      text-align: center;
+      background: linear-gradient(90deg, var(--green), var(--yellow));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+      letter-spacing: 0.1em;
+    }
+    #lb-subtitle {
+      font-family: Arial, sans-serif;
+      font-size: clamp(0.62rem, 1.5vw, 0.78rem);
+      color: rgba(255,255,255,0.38);
+      text-align: center;
+      margin-bottom: 18px;
+      letter-spacing: 0.05em;
+    }
+    .lb-row {
+      display: grid;
+      grid-template-columns: 32px 1fr 66px 72px;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-bottom: 5px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.06);
+      font-family: Arial, sans-serif;
+      transition: background 0.2s;
+    }
+    .lb-row:hover { background: rgba(57,255,20,0.06); }
+    .lb-row.lb-header {
+      background: rgba(57,255,20,0.07);
+      border-color: rgba(57,255,20,0.18);
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.45);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+    .lb-rank { font-size: 1.05rem; text-align: center; }
+    .lb-name { font-size: clamp(0.72rem, 1.7vw, 0.9rem); color: #fff; }
+    .lb-wins { font-size: clamp(0.7rem, 1.5vw, 0.86rem); color: var(--green2); text-align: center; font-weight: bold; }
+    .lb-rating { font-size: clamp(0.7rem, 1.5vw, 0.86rem); color: var(--yellow); text-align: center; }
+    .lb-medal-1 .lb-rank::before { content: '🥇'; }
+    .lb-medal-2 .lb-rank::before { content: '🥈'; }
+    .lb-medal-3 .lb-rank::before { content: '🥉'; }
+    .lb-medal-other .lb-rank { color: rgba(255,255,255,0.35); font-size: 0.82rem; }
+    .lb-empty {
+      font-family: Arial, sans-serif;
+      color: rgba(255,255,255,0.32);
+      text-align: center;
+      padding: 28px 16px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    #lb-close {
+      margin-top: 18px;
+      width: 100%;
+      padding: 12px;
+      background: rgba(57,255,20,0.07);
+      border: 1.5px solid rgba(57,255,20,0.28);
+      color: var(--green2);
+      border-radius: 10px;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: 0.88rem;
+      cursor: pointer;
+      transition: all 0.25s var(--ease-bounce);
+      letter-spacing: 0.07em;
+    }
+    #lb-close:hover { background: rgba(57,255,20,0.18); transform: scale(1.02); box-shadow: 0 0 14px rgba(57,255,20,0.2); }
+    #lb-close:active { transform: scale(0.97); transition-duration: 0.08s; }
 
     /* ─────────────────── Responsive tweaks ─────────────────── */
     @media (max-width: 480px) {
       #header h1 { font-size: 1.1rem; }
       .fart-blob  { font-size: 4.5rem; }
       #winner-box { padding: 24px 28px; }
+      #lb-box { padding: 20px 16px 24px; }
+      .lb-row { grid-template-columns: 26px 1fr 52px 58px; }
     }
   </style>
 </head>
@@ -361,7 +637,11 @@
   <div id="header">
     <h1>💨 STINKR</h1>
     <div id="champion-bar">Loading the stench…</div>
+    <button id="leaderboard-btn" onclick="showLeaderboard()">🏆 Board</button>
   </div>
+
+  <!-- Fart counter -->
+  <div id="fart-counter">💨 0 / 10 farts sniffed</div>
 
   <!-- Arena -->
   <div id="arena">
@@ -374,6 +654,11 @@
       <div class="fart-name" id="left-name">Loading…</div>
       <div class="fart-subtitle">Click to sniff!</div>
       <div class="play-status" id="left-status"></div>
+      <div class="rating-panel" id="left-rating-panel">
+        <div class="rating-label">Rate this fart:</div>
+        <div class="rating-stars" id="left-stars"></div>
+        <div class="rating-avg" id="left-rating-avg"></div>
+      </div>
     </div>
 
     <!-- Right Side -->
@@ -384,6 +669,11 @@
       <div class="fart-name" id="right-name">Loading…</div>
       <div class="fart-subtitle">Click to sniff!</div>
       <div class="play-status" id="right-status"></div>
+      <div class="rating-panel" id="right-rating-panel">
+        <div class="rating-label">Rate this fart:</div>
+        <div class="rating-stars" id="right-stars"></div>
+        <div class="rating-avg" id="right-rating-avg"></div>
+      </div>
     </div>
 
   </div>
@@ -407,13 +697,26 @@
       <div id="winner-label">🏆 STINKR OF THE ROUND 🏆</div>
       <div id="winner-name"></div>
       <div id="winner-wins"></div>
+      <div id="winner-rating"></div>
       <button id="next-btn" onclick="nextRound()">Next Challenger 💨</button>
+    </div>
+  </div>
+
+  <!-- Leaderboard overlay -->
+  <div id="lb-overlay" onclick="hideLbOnBackdrop(event)">
+    <div id="lb-box">
+      <div id="lb-title">🏆 STINK LEADERBOARD</div>
+      <div id="lb-subtitle">Greatest farts of all time</div>
+      <div id="lb-content"></div>
+      <button id="lb-close" onclick="hideLeaderboard()">Close 💨</button>
     </div>
   </div>
 
   <script>
   (function () {
     'use strict';
+
+    var MAX_FARTS_PER_ROUND = 10;
 
     /* ── Fart catalogue ────────────────────────────────── */
     var FARTS = [
@@ -426,11 +729,33 @@
       { name: 'Rip #3',             file: 'assets/sounds/voice_28-03-2026_14-05-59.mp3',    emoji: '🤮' },
     ];
 
+    /* ── Persistent storage ─────────────────────────────── */
+    function loadStorage(key, fallback) {
+      try {
+        var val = localStorage.getItem(key);
+        return val ? JSON.parse(val) : fallback;
+      } catch (e) { return fallback; }
+    }
+    function saveStorage(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+    }
+
+    // lbData: { [fartName]: { wins: N, totalRating: N, timesRated: N } }
+    var lbData = loadStorage('stinkr_lb', {});
+
+    function getLbEntry(name) {
+      if (!lbData[name]) lbData[name] = { wins: 0, totalRating: 0, timesRated: 0 };
+      return lbData[name];
+    }
+    function saveLb() { saveStorage('stinkr_lb', lbData); }
+
     /* ── State ─────────────────────────────────────────── */
     var champion = null;   // { fart, wins } or null first round
     var leftFart  = null;
     var rightFart = null;
     var audios    = { left: null, right: null };
+    var fartsPlayedThisRound = 0;
+    var roundLocked = false;
 
     /* ── DOM refs ─────────────────────────────────────── */
     var leftSide  = document.getElementById('left-side');
@@ -448,6 +773,14 @@
     var winnerName  = document.getElementById('winner-name');
     var winnerWins  = document.getElementById('winner-wins');
     var winnerEmoji = document.getElementById('winner-emoji');
+    var winnerRating = document.getElementById('winner-rating');
+    var fartCounter  = document.getElementById('fart-counter');
+    var leftRatingPanel  = document.getElementById('left-rating-panel');
+    var rightRatingPanel = document.getElementById('right-rating-panel');
+    var leftStars   = document.getElementById('left-stars');
+    var rightStars  = document.getElementById('right-stars');
+    var leftRatingAvg  = document.getElementById('left-rating-avg');
+    var rightRatingAvg = document.getElementById('right-rating-avg');
 
     /* ── Helpers ─────────────────────────────────────── */
     function pickRandom(exclude) {
@@ -469,7 +802,7 @@
       var a = audios[side];
       if (!a) return;
       a.currentTime = 0;
-      a.play().catch(function () {/* autoplay guard – user clicked, should be fine */});
+      a.play().catch(function () {/* autoplay guard */});
     }
 
     function triggerJiggle(side) {
@@ -490,8 +823,81 @@
       }
     }
 
+    function updateFartCounter() {
+      fartCounter.classList.remove('warning', 'maxed');
+      if (fartsPlayedThisRound >= MAX_FARTS_PER_ROUND) {
+        fartCounter.textContent = '🗳️ ROUND OVER — Cast your vote!';
+        fartCounter.classList.add('maxed');
+      } else {
+        fartCounter.textContent = '💨 ' + fartsPlayedThisRound + ' / ' + MAX_FARTS_PER_ROUND + ' farts sniffed';
+        if (MAX_FARTS_PER_ROUND - fartsPlayedThisRound <= 3) {
+          fartCounter.classList.add('warning');
+        }
+      }
+    }
+
+    /* ── Rating UI ─────────────────────────────────────── */
+    function buildStars(side, fartName) {
+      var container = side === 'left' ? leftStars : rightStars;
+      container.innerHTML = '';
+      for (var i = 1; i <= 10; i++) {
+        (function (rating) {
+          var btn = document.createElement('button');
+          btn.className = 'star-btn';
+          btn.textContent = rating;
+          btn.setAttribute('aria-label', 'Rate ' + rating + ' out of 10');
+          btn.onclick = function (e) {
+            e.stopPropagation();
+            submitRating(side, fartName, rating);
+          };
+          container.appendChild(btn);
+        })(i);
+      }
+      updateRatingAvg(side, fartName);
+    }
+
+    function submitRating(side, fartName, rating) {
+      var entry = getLbEntry(fartName);
+      entry.totalRating += rating;
+      entry.timesRated  += 1;
+      saveLb();
+
+      var container = side === 'left' ? leftStars : rightStars;
+      var btns = container.querySelectorAll('.star-btn');
+      btns.forEach(function (b, idx) {
+        b.classList.remove('selected', 'lit');
+        if (idx + 1 === rating) b.classList.add('selected');
+        else if (idx + 1 < rating) b.classList.add('lit');
+      });
+
+      updateRatingAvg(side, fartName);
+    }
+
+    function updateRatingAvg(side, fartName) {
+      var avgEl = side === 'left' ? leftRatingAvg : rightRatingAvg;
+      var entry = getLbEntry(fartName);
+      if (entry.timesRated > 0) {
+        var avg = (entry.totalRating / entry.timesRated).toFixed(1);
+        avgEl.textContent = '⭐ avg: ' + avg + '/10 (' + entry.timesRated + ' rating' + (entry.timesRated === 1 ? '' : 's') + ')';
+      } else {
+        avgEl.textContent = 'No ratings yet';
+      }
+    }
+
+    function showRatingPanel(side) {
+      var panel = side === 'left' ? leftRatingPanel : rightRatingPanel;
+      panel.classList.add('visible');
+    }
+
     /* ── Round setup ─────────────────────────────────── */
     function setupRound() {
+      fartsPlayedThisRound = 0;
+      roundLocked = false;
+      leftSide.classList.remove('locked');
+      rightSide.classList.remove('locked');
+      leftRatingPanel.classList.remove('visible');
+      rightRatingPanel.classList.remove('visible');
+
       var champ = champion ? champion.fart : null;
       var challenger = pickRandom(champ);
 
@@ -505,7 +911,6 @@
         leftFart  = challenger;
         rightFart = champ;
       } else {
-        // First round: two random farts
         leftFart  = pickRandom(null);
         rightFart = pickRandom(leftFart);
       }
@@ -517,6 +922,10 @@
       rightName.textContent = rightFart.name;
       leftStatus.textContent  = '';
       rightStatus.textContent = '';
+
+      // Build rating stars for this round's farts
+      buildStars('left',  leftFart.name);
+      buildStars('right', rightFart.name);
 
       // Show/hide champion badge
       if (champ) {
@@ -540,10 +949,17 @@
       loadAudio('right', rightFart);
 
       updateChampBar();
+      updateFartCounter();
     }
 
     /* ── Click handlers ──────────────────────────────── */
     function handleSideClick(side) {
+      if (roundLocked) {
+        var s = side === 'left' ? leftStatus : rightStatus;
+        s.textContent = '🗳️ Time to vote!';
+        return;
+      }
+
       var status = side === 'left' ? leftStatus : rightStatus;
       playAudio(side);
       triggerJiggle(side);
@@ -551,6 +967,20 @@
       setTimeout(function () {
         if (status.textContent === '💨 *pfffft*') status.textContent = '▶ Click again to replay';
       }, 1800);
+
+      // Show rating panel on first play of each side
+      showRatingPanel(side);
+
+      fartsPlayedThisRound++;
+      updateFartCounter();
+
+      if (fartsPlayedThisRound >= MAX_FARTS_PER_ROUND) {
+        roundLocked = true;
+        leftSide.classList.add('locked');
+        rightSide.classList.add('locked');
+        leftStatus.textContent  = '🗳️ Vote now!';
+        rightStatus.textContent = '🗳️ Vote now!';
+      }
     }
 
     leftSide.addEventListener('click',   function () { handleSideClick('left'); });
@@ -566,12 +996,16 @@
       if (audios.left)  { audios.left.pause();  audios.left.currentTime  = 0; }
       if (audios.right) { audios.right.pause(); audios.right.currentTime = 0; }
 
-      // Update champion
+      // Update in-session champion
       if (champion && champion.fart === winner) {
         champion.wins += 1;
       } else {
         champion = { fart: winner, wins: 1 };
       }
+
+      // Persist win to leaderboard
+      getLbEntry(winner.name).wins += 1;
+      saveLb();
 
       // Show overlay
       winnerEmoji.textContent = winner.emoji;
@@ -581,6 +1015,14 @@
           ? '🏆 First win — they\'re coming for the throne!'
           : '🏆 ' + champion.wins + ' wins and counting — unstoppable!';
 
+      var entry = getLbEntry(winner.name);
+      if (entry.timesRated > 0) {
+        var avg = (entry.totalRating / entry.timesRated).toFixed(1);
+        winnerRating.textContent = '⭐ Community rating: ' + avg + '/10';
+      } else {
+        winnerRating.textContent = '⭐ No ratings yet — be the first!';
+      }
+
       overlay.classList.add('show');
     };
 
@@ -589,6 +1031,65 @@
       overlay.classList.remove('show');
       setupRound();
     };
+
+    /* ── Leaderboard ─────────────────────────────────── */
+    window.showLeaderboard = function () {
+      renderLeaderboard();
+      document.getElementById('lb-overlay').classList.add('show');
+    };
+
+    window.hideLeaderboard = function () {
+      document.getElementById('lb-overlay').classList.remove('show');
+    };
+
+    window.hideLbOnBackdrop = function (e) {
+      if (e.target === document.getElementById('lb-overlay')) hideLeaderboard();
+    };
+
+    function renderLeaderboard() {
+      var content = document.getElementById('lb-content');
+
+      var entries = FARTS.map(function (f) {
+        var e = getLbEntry(f.name);
+        return {
+          name:       f.name,
+          emoji:      f.emoji,
+          wins:       e.wins,
+          avgRating:  e.timesRated > 0 ? e.totalRating / e.timesRated : 0,
+          timesRated: e.timesRated,
+        };
+      });
+
+      // Sort by wins desc, then avgRating desc
+      entries.sort(function (a, b) {
+        return b.wins !== a.wins ? b.wins - a.wins : b.avgRating - a.avgRating;
+      });
+
+      var hasAny = entries.some(function (e) { return e.wins > 0 || e.timesRated > 0; });
+      if (!hasAny) {
+        content.innerHTML = '<div class="lb-empty">💨 No rounds played yet!<br>Start sniffing to fill the board.</div>';
+        return;
+      }
+
+      var html = '<div class="lb-row lb-header">'
+        + '<div class="lb-rank">#</div>'
+        + '<div class="lb-name">Fart</div>'
+        + '<div class="lb-wins">Wins</div>'
+        + '<div class="lb-rating">Rating</div>'
+        + '</div>';
+
+      entries.forEach(function (e, idx) {
+        var medalClass = idx === 0 ? 'lb-medal-1' : idx === 1 ? 'lb-medal-2' : idx === 2 ? 'lb-medal-3' : 'lb-medal-other';
+        html += '<div class="lb-row ' + medalClass + '">'
+          + '<div class="lb-rank">' + (idx >= 3 ? idx + 1 : '') + '</div>'
+          + '<div class="lb-name">' + e.emoji + ' ' + e.name + '</div>'
+          + '<div class="lb-wins">' + (e.wins > 0 ? e.wins : '—') + '</div>'
+          + '<div class="lb-rating">' + (e.timesRated > 0 ? e.avgRating.toFixed(1) + ' ★' : '—') + '</div>'
+          + '</div>';
+      });
+
+      content.innerHTML = html;
+    }
 
     /* ── Particle system ─────────────────────────────── */
     (function initParticles() {
